@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Container,
@@ -14,57 +14,94 @@ import {
   FormControl,
   FormLabel,
   Badge,
+  useToast,
 } from '@chakra-ui/react';
 import { FiPower } from 'react-icons/fi';
 import { useWallet } from '../../hooks/useWallet';
 import { WorkerMetrics } from './WorkerMetrics';
 import { TaskHistory, Task } from './TaskHistory';
+import { DashboardStats } from './DashboardStats';
 
 export const Dashboard: React.FC = () => {
   const { account, balance } = useWallet();
   const [isWorkerActive, setIsWorkerActive] = useState(true);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const bgColor = useColorModeValue('gray.50', 'gray.900');
   const cardBg = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const toast = useToast();
 
-  // Mock data for demonstration
-  const mockTasks: Task[] = [
-    {
-      id: '0x1234567890abcdef',
-      type: 'Data Processing',
-      status: 'completed',
-      startTime: new Date(Date.now() - 3600000),
-      endTime: new Date(),
-      reward: '0.05',
-      client: '0xabcdef1234567890',
-    },
-    {
-      id: '0x2345678901bcdef',
-      type: 'ML Training',
-      status: 'running',
-      startTime: new Date(Date.now() - 1800000),
-      reward: '0.08',
-      client: '0xbcdef1234567890a',
-    },
-    {
-      id: '0x3456789012cdef',
-      type: 'Video Processing',
-      status: 'failed',
-      startTime: new Date(Date.now() - 7200000),
-      endTime: new Date(Date.now() - 5400000),
-      reward: '0.03',
-      client: '0xcdef1234567890ab',
-    },
-  ];
+  useEffect(() => {
+    // Simulated data loading
+    const loadTasks = async () => {
+      try {
+        setIsLoading(true);
+        // Replace this with actual API call
+        const mockTasks: Task[] = [
+          {
+            id: '1',
+            type: 'Storage',
+            status: 'completed',
+            client: '0x1234...5678',
+            startTime: new Date(Date.now() - 3600000),
+            endTime: new Date(),
+            reward: '0.5',
+          },
+          {
+            id: '2',
+            type: 'Processing',
+            status: 'running',
+            client: '0x8765...4321',
+            startTime: new Date(Date.now() - 1800000),
+            reward: '0.3',
+          },
+          {
+            id: '3',
+            type: 'Verification',
+            status: 'failed',
+            client: '0x9876...1234',
+            startTime: new Date(Date.now() - 7200000),
+            endTime: new Date(Date.now() - 3600000),
+            reward: '0.4',
+          },
+        ];
+
+        setTimeout(() => {
+          setTasks(mockTasks);
+          setIsLoading(false);
+        }, 1000); // Simulate network delay
+      } catch (error) {
+        console.error('Error loading tasks:', error);
+        toast({
+          title: 'Error loading tasks',
+          description: 'Please try again later',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+        setIsLoading(false);
+      }
+    };
+
+    loadTasks();
+  }, [toast]);
 
   const handleViewTask = (taskId: string) => {
-    console.log('View task:', taskId);
-    // Implement task viewing logic
+    // Implement task view logic
+    console.log('Viewing task:', taskId);
   };
 
   const handleRetryTask = (taskId: string) => {
-    console.log('Retry task:', taskId);
     // Implement task retry logic
+    console.log('Retrying task:', taskId);
+    toast({
+      title: 'Retrying task',
+      description: `Task ${taskId} has been queued for retry`,
+      status: 'info',
+      duration: 3000,
+      isClosable: true,
+    });
   };
 
   const toggleWorkerStatus = () => {
@@ -108,6 +145,9 @@ export const Dashboard: React.FC = () => {
           {/* Metrics */}
           <WorkerMetrics />
 
+          {/* Dashboard Stats */}
+          <DashboardStats />
+
           {/* Task History */}
           <Box>
             <Flex align="center" mb={4}>
@@ -118,7 +158,8 @@ export const Dashboard: React.FC = () => {
               </Button>
             </Flex>
             <TaskHistory
-              tasks={mockTasks}
+              tasks={tasks}
+              isLoading={isLoading}
               onViewTask={handleViewTask}
               onRetryTask={handleRetryTask}
             />
