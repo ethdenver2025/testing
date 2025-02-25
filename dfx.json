@@ -1,0 +1,30 @@
+{
+  "canisters": {
+    "orchestrator": {
+      "main": "src/orchestrator/main.mo",
+      "type": "motoko",
+      "dependencies": []
+    },
+    "frontend": {
+      "dependencies": ["orchestrator"],
+      "frontend": {
+        "entrypoint": "src/frontend/index.html"
+      },
+      "source": ["src/frontend/assets"],
+      "type": "assets"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "networks": {
+    "local": {
+      "bind": "127.0.0.1:8000",
+      "type": "ephemeral"
+    }
+  },
+  "version": 1
+}
