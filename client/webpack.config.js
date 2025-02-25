@@ -14,16 +14,23 @@ module.exports = (env, argv) => {
     output: {
       path: path.resolve(__dirname, 'dist'),
       filename: isProduction ? '[name].[contenthash].js' : '[name].js',
-      publicPath: publicPath,
+      publicPath: isProduction ? '/formicary-app/' : '/',
       clean: true
     },
     module: {
       rules: [
         {
           test: /\.(js|jsx|ts|tsx|mjs)$/,
-          exclude: /node_modules\/(?!(@chakra-ui|@emotion|framer-motion)\/).*/,
+          exclude: /node_modules\/(?!(@chakra-ui|@emotion|framer-motion|react-icons)\/).*/,
           use: {
-            loader: 'babel-loader'
+            loader: 'babel-loader',
+            options: {
+              presets: [
+                '@babel/preset-env',
+                '@babel/preset-react',
+                '@babel/preset-typescript'
+              ]
+            }
           }
         },
         {
@@ -65,7 +72,7 @@ module.exports = (env, argv) => {
       new HtmlWebpackPlugin({
         template: './public/index.html',
         minify: isProduction,
-        publicPath: publicPath
+        publicPath: isProduction ? '/formicary-app/' : '/'
       }),
       new Dotenv({
         path: '.env',
@@ -98,16 +105,17 @@ module.exports = (env, argv) => {
         directory: path.join(__dirname, 'public')
       },
       historyApiFallback: true,
+      port: 3001,
       hot: true,
-      port: 3005,
       host: '127.0.0.1',
-      open: false,
+      open: true,
       client: {
         overlay: {
           errors: true,
           warnings: false
         }
       }
-    }
+    },
+    devtool: isProduction ? 'source-map' : 'eval-source-map'
   };
 };
