@@ -6,6 +6,7 @@ const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = (env, argv) => {
   const isProduction = argv.mode === 'production';
+  const publicPath = isProduction ? '/formicary-app/' : '/';
 
   return {
     mode: argv.mode || 'development',
@@ -13,7 +14,7 @@ module.exports = (env, argv) => {
     output: {
       path: path.resolve(__dirname, 'dist'),
       filename: isProduction ? '[name].[contenthash].js' : '[name].js',
-      publicPath: '/',
+      publicPath: publicPath,
       clean: true
     },
     module: {
@@ -63,7 +64,8 @@ module.exports = (env, argv) => {
     plugins: [
       new HtmlWebpackPlugin({
         template: './public/index.html',
-        minify: isProduction
+        minify: isProduction,
+        publicPath: publicPath
       }),
       new Dotenv({
         path: '.env',
