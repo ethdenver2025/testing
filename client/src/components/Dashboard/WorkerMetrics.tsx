@@ -15,21 +15,49 @@ interface MetricCardProps {
   value: string | number;
   helpText?: string;
   change?: number;
+  accentColor?: string;
 }
 
-const MetricCard: React.FC<MetricCardProps> = ({ label, value, helpText, change }) => {
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
+const MetricCard: React.FC<MetricCardProps> = ({ 
+  label, 
+  value, 
+  helpText, 
+  change,
+  accentColor = 'brand.primary'
+}) => {
+  const bgColor = useColorModeValue('monokai.800', 'monokai.900');
+  const borderColor = useColorModeValue('monokai.700', 'monokai.600');
+  const labelColor = useColorModeValue('gray.400', 'gray.500');
 
   return (
-    <Box p={5} bg={bgColor} rounded="lg" borderWidth="1px" borderColor={borderColor} shadow="sm">
+    <Box 
+      p={5} 
+      bg={bgColor} 
+      rounded="lg" 
+      borderWidth="1px" 
+      borderColor={borderColor}
+      position="relative"
+      overflow="hidden"
+      _before={{
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '4px',
+        height: '100%',
+        bg: accentColor,
+      }}
+    >
       <Stat>
-        <StatLabel fontSize="sm" color="gray.500">{label}</StatLabel>
-        <StatNumber fontSize="2xl" fontWeight="bold">{value}</StatNumber>
+        <StatLabel fontSize="sm" color={labelColor}>{label}</StatLabel>
+        <StatNumber fontSize="2xl" fontWeight="bold" color={accentColor}>{value}</StatNumber>
         {(helpText || change !== undefined) && (
           <StatHelpText>
             {change !== undefined && (
-              <StatArrow type={change >= 0 ? 'increase' : 'decrease'} />
+              <StatArrow 
+                type={change >= 0 ? 'increase' : 'decrease'} 
+                color={change >= 0 ? 'brand.success' : 'brand.error'}
+              />
             )}
             {change !== undefined ? `${Math.abs(change)}% ` : ''}
             {helpText}
@@ -47,24 +75,28 @@ export const WorkerMetrics: React.FC = () => {
       value: 3,
       helpText: 'Currently running',
       change: 12,
+      accentColor: 'brand.info'
     },
     {
       label: 'Completed Tasks',
       value: 28,
       helpText: 'Last 24 hours',
       change: 8,
+      accentColor: 'brand.success'
     },
     {
       label: 'Success Rate',
       value: '96.5%',
       helpText: 'Last 7 days',
       change: 2.3,
+      accentColor: 'brand.primary'
     },
     {
       label: 'Earnings',
       value: '1.45 ETH',
       helpText: 'This month',
       change: 15.4,
+      accentColor: 'brand.secondary'
     },
   ];
 

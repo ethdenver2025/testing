@@ -1,6 +1,9 @@
 import React from 'react';
-import { ChakraProvider, extendTheme } from '@chakra-ui/react';
+import { ChakraProvider, extendTheme, CSSReset } from '@chakra-ui/react';
 import { WorkerDashboard } from './components/WorkerDashboard/WorkerDashboard';
+import { WalletProvider } from './contexts/WalletContext';
+import { DashboardProvider } from './contexts/DashboardContext';
+import { MetaDashboard } from './components/MetaDashboard/MetaDashboard';
 
 // Extend the theme to include custom colors, fonts, etc
 const theme = extendTheme({
@@ -33,7 +36,12 @@ const mockWorker = {
 const App: React.FC = () => {
   return (
     <ChakraProvider theme={theme}>
-      <WorkerDashboard worker={mockWorker} />
+      <CSSReset />
+      <WalletProvider>
+        <DashboardProvider>
+          <MetaDashboard />
+        </DashboardProvider>
+      </WalletProvider>
     </ChakraProvider>
   );
 };

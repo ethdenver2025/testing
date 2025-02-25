@@ -37,19 +37,19 @@ export const TaskHistory: React.FC<TaskHistoryProps> = ({
   onViewTask, 
   onRetryTask 
 }) => {
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
+  const bgColor = useColorModeValue('monokai.800', 'monokai.900');
+  const borderColor = useColorModeValue('monokai.700', 'monokai.600');
 
   const getStatusColor = (status: Task['status']) => {
     switch (status) {
       case 'pending':
-        return 'yellow';
+        return 'brand.yellow';
       case 'running':
-        return 'blue';
+        return 'brand.info';
       case 'completed':
-        return 'green';
+        return 'brand.success';
       case 'failed':
-        return 'red';
+        return 'brand.error';
       default:
         return 'gray';
     }
@@ -112,6 +112,9 @@ export const TaskHistory: React.FC<TaskHistoryProps> = ({
                         aria-label="View task details"
                         icon={<FiEye />}
                         size="sm"
+                        variant="ghost"
+                        color="brand.primary"
+                        _hover={{ bg: 'monokai.700' }}
                         onClick={() => onViewTask?.(task.id)}
                       />
                     </Tooltip>
@@ -121,7 +124,9 @@ export const TaskHistory: React.FC<TaskHistoryProps> = ({
                           aria-label="Retry task"
                           icon={<FiRefreshCcw />}
                           size="sm"
-                          colorScheme="blue"
+                          variant="ghost"
+                          color="brand.secondary"
+                          _hover={{ bg: 'monokai.700' }}
                           onClick={() => onRetryTask?.(task.id)}
                         />
                       </Tooltip>
