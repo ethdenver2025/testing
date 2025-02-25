@@ -1,0 +1,56 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: './client/package-lock.json'
+
+    - name: Install Dependencies
+      working-directory: ./client
+      run: npm ci
+
+    - name: Build
+      working-directory: ./client
+      run: npm run build
+
+    - name: Cache build output
+      uses: actions/cache@v3
+      with:
+        path: ./client/dist
+        key: ${{ runner.os }}-build-${{ github.sha }}
+
+  deploy:
+    needs: build-and-test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Restore cached build
+      uses: actions/cache@v3
+      with:
+        path: ./client/dist
+        key: ${{ runner.os }}-build-${{ github.sha }}
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./client/dist
+        cname: app.formicary.io # Optional: Add this if you have a custom domain
