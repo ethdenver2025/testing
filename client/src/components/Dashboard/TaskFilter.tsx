@@ -1,85 +1,96 @@
 import React from 'react';
 import {
   HStack,
-  Select,
   Input,
+  Select,
   InputGroup,
   InputLeftElement,
   useColorModeValue,
 } from '@chakra-ui/react';
-import { FiSearch } from 'react-icons/fi';
+import { FiSearch, FiFilter } from 'react-icons/fi';
 
 interface TaskFilterProps {
-  onFilterChange: (filters: TaskFilters) => void;
+  searchTerm: string;
+  onSearchChange: (value: string) => void;
+  statusFilter: string;
+  onStatusChange: (value: string) => void;
+  typeFilter: string;
+  onTypeChange: (value: string) => void;
 }
 
-export interface TaskFilters {
-  status: string;
-  type: string;
-  search: string;
-  sortBy: string;
-}
-
-export const TaskFilter: React.FC<TaskFilterProps> = ({ onFilterChange }) => {
-  const [filters, setFilters] = React.useState<TaskFilters>({
-    status: 'all',
-    type: 'all',
-    search: '',
-    sortBy: 'newest',
-  });
-
-  const handleFilterChange = (key: keyof TaskFilters, value: string) => {
-    const newFilters = { ...filters, [key]: value };
-    setFilters(newFilters);
-    onFilterChange(newFilters);
-  };
+export const TaskFilter: React.FC<TaskFilterProps> = ({
+  searchTerm,
+  onSearchChange,
+  statusFilter,
+  onStatusChange,
+  typeFilter,
+  onTypeChange,
+}) => {
+  const inputBg = useColorModeValue('monokai.700', 'monokai.800');
+  const inputHoverBg = useColorModeValue('monokai.600', 'monokai.700');
+  const iconColor = useColorModeValue('gray.400', 'gray.500');
 
   return (
-    <HStack spacing={4} mb={4} wrap="wrap">
-      <InputGroup maxW="300px">
+    <HStack spacing={4} mb={4} width="full">
+      <InputGroup>
         <InputLeftElement pointerEvents="none">
-          <FiSearch color="gray.300" />
+          <FiSearch color={iconColor} />
         </InputLeftElement>
         <Input
           placeholder="Search tasks..."
-          value={filters.search}
-          onChange={(e) => handleFilterChange('search', e.target.value)}
+          value={searchTerm}
+          onChange={(e) => onSearchChange(e.target.value)}
+          size="sm"
+          bg={inputBg}
+          border="none"
+          _hover={{ bg: inputHoverBg }}
+          _focus={{ boxShadow: 'none', bg: inputHoverBg }}
         />
       </InputGroup>
 
-      <Select
-        maxW="200px"
-        value={filters.status}
-        onChange={(e) => handleFilterChange('status', e.target.value)}
-      >
-        <option value="all">All Status</option>
-        <option value="pending">Pending</option>
-        <option value="running">Running</option>
-        <option value="completed">Completed</option>
-        <option value="failed">Failed</option>
-      </Select>
+      <InputGroup maxW="200px">
+        <InputLeftElement pointerEvents="none">
+          <FiFilter color={iconColor} />
+        </InputLeftElement>
+        <Select
+          value={statusFilter}
+          onChange={(e) => onStatusChange(e.target.value)}
+          size="sm"
+          bg={inputBg}
+          border="none"
+          pl={10}
+          _hover={{ bg: inputHoverBg }}
+          _focus={{ boxShadow: 'none', bg: inputHoverBg }}
+        >
+          <option value="all">All Status</option>
+          <option value="pending">Pending</option>
+          <option value="running">Running</option>
+          <option value="completed">Completed</option>
+          <option value="failed">Failed</option>
+        </Select>
+      </InputGroup>
 
-      <Select
-        maxW="200px"
-        value={filters.type}
-        onChange={(e) => handleFilterChange('type', e.target.value)}
-      >
-        <option value="all">All Types</option>
-        <option value="Data Processing">Data Processing</option>
-        <option value="ML Training">ML Training</option>
-        <option value="Video Processing">Video Processing</option>
-      </Select>
-
-      <Select
-        maxW="200px"
-        value={filters.sortBy}
-        onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-      >
-        <option value="newest">Newest First</option>
-        <option value="oldest">Oldest First</option>
-        <option value="reward-high">Highest Reward</option>
-        <option value="reward-low">Lowest Reward</option>
-      </Select>
+      <InputGroup maxW="200px">
+        <InputLeftElement pointerEvents="none">
+          <FiFilter color={iconColor} />
+        </InputLeftElement>
+        <Select
+          value={typeFilter}
+          onChange={(e) => onTypeChange(e.target.value)}
+          size="sm"
+          bg={inputBg}
+          border="none"
+          pl={10}
+          _hover={{ bg: inputHoverBg }}
+          _focus={{ boxShadow: 'none', bg: inputHoverBg }}
+        >
+          <option value="all">All Types</option>
+          <option value="storage">Storage</option>
+          <option value="processing">Processing</option>
+          <option value="verification">Verification</option>
+          <option value="computation">Computation</option>
+        </Select>
+      </InputGroup>
     </HStack>
   );
 };
