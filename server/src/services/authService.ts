@@ -35,19 +35,24 @@ export class AuthService {
     // Find or create user
     const user = await prisma.user.upsert({
       where: { walletAddress },
-      update: { lastLogin: new Date() },
+      update: { 
+        lastLogin: new Date()
+      },
       create: {
         walletAddress,
         nonce: crypto.randomUUID(),
+        username: `user_${crypto.randomUUID().substring(0, 8)}`,
+        authMethod: 'WALLET',
+        isProfileComplete: false,
+        lastRegistration: new Date()
       },
+      include: {
+        accountSettings: true
+      }
     });
 
     // Generate JWT token
-    const token = jwt.sign(
-      { userId: user.id, walletAddress },
-      this.JWT_SECRET,
-      { expiresIn: '24h' }
-    );
+    const token = this.generateToken(user.id);
 
     return { user, token };
   }
@@ -63,29 +68,29 @@ export class AuthService {
       const payload = ticket.getPayload();
       if (!payload) throw new Error('Invalid token payload');
 
-      const { email, name, picture } = payload;
+      const { sub: googleId, email, name, picture } = payload;
 
       // Find or create user
       const user = await prisma.user.upsert({
-        where: { email: email! },
-        update: {
-          lastLogin: new Date(),
-          name: name || undefined,
-          profileImage: picture || undefined,
+        where: { googleId },
+        update: { 
+          lastLogin: new Date() 
         },
         create: {
-          email: email!,
-          name: name || email!.split('@')[0],
-          profileImage: picture,
+          googleId,
+          email,
+          username: `user_${crypto.randomUUID().substring(0, 8)}`,
+          authMethod: 'GOOGLE',
+          isProfileComplete: false,
+          lastRegistration: new Date()
         },
+        include: {
+          accountSettings: true
+        }
       });
 
       // Generate JWT token
-      const authToken = jwt.sign(
-        { userId: user.id, email },
-        this.JWT_SECRET,
-        { expiresIn: '24h' }
-      );
+      const authToken = this.generateToken(user.id);
 
       return { user, token: authToken };
     } catch (error) {
@@ -153,5 +158,13 @@ export class AuthService {
         profile: true,
       },
     });
+  }
+
+  private generateToken(userId: string) {
+    return jwt.sign(
+      { userId },
+      this.JWT_SECRET,
+      { expiresIn: '24h' }
+    );
   }
 }

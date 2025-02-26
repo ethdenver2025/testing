@@ -11,19 +11,23 @@ generator client {
 }
 
 model User {
-  id            String    @id @default(uuid())
-  username      String    @unique
-  email         String?   @unique
-  walletAddress String?   @unique
-  googleId      String?   @unique
-  bio           String?
-  isProfileComplete Boolean @default(false)
-  authMethod    AuthMethod
-  roles         UserRole[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  profile       Profile?
-  tasks         Task[]
+  id                 String    @id @default(uuid())
+  username           String    @unique
+  email              String?   @unique
+  walletAddress      String?   @unique
+  googleId           String?   @unique
+  bio                String?
+  isProfileComplete  Boolean   @default(false)
+  authMethod         AuthMethod
+  roles              UserRole[]
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  lastLogin          DateTime  @default(now())
+  lastRegistration   DateTime  @default(now())
+  registrationCount  Int       @default(1)
+  accountSettings    AccountSettings?
+  profile            Profile?
+  tasks              Task[]
 }
 
 model Profile {
@@ -36,6 +40,27 @@ model Profile {
   reputation Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model AccountSettings {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id])
+  emailNotifications Boolean @default(true)
+  twoFactorEnabled Boolean @default(false)
+  theme         String   @default("light")
+  language      String   @default("en")
+  timezone      String   @default("UTC")
+  privacy       Privacy  @default(PUBLIC)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model RestrictedUsername {
+  id         String   @id @default(uuid())
+  word       String   @unique
+  reason     String?
+  createdAt  DateTime @default(now())
 }
 
 model Task {
@@ -74,4 +99,10 @@ enum AuthMethod {
 enum UserRole {
   PRODUCTION_CREW
   EVENT_ORGANIZER
+}
+
+enum Privacy {
+  PUBLIC
+  PRIVATE
+  FRIENDS_ONLY
 }
