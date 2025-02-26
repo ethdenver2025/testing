@@ -16,10 +16,16 @@ import {
   CardBody,
   IconButton,
   Stack,
+  Tabs,
+  TabList,
+  TabPanels,
+  Tab,
+  TabPanel,
 } from '@chakra-ui/react';
 import { useAuth, UserType } from '../contexts/AuthContext';
 import { FiArrowLeft } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
+import { Profile } from '../components/crew/Profile';
 
 export const AccountSettings = () => {
   const { user, updateProfile } = useAuth();
@@ -85,7 +91,7 @@ export const AccountSettings = () => {
   };
 
   const handleBack = () => {
-    navigate(user?.activeRole === 'PRODUCTION_CREW' ? '/crew-dashboard' : '/organizer-dashboard');
+    navigate(-1);
   };
 
   const handleProductionCrewToggle = () => {
@@ -104,109 +110,96 @@ export const AccountSettings = () => {
           icon={<FiArrowLeft />}
           variant="ghost"
           onClick={handleBack}
-          size="md"
         />
-        <Heading>Account Settings</Heading>
+        <Heading size="lg">Account Settings</Heading>
       </HStack>
-      
-      {/* Profile Information */}
-      <Card bg="carbon.800" mb={6}>
-        <CardBody>
-          <Heading size="md" mb={4}>Profile Information</Heading>
-          <form onSubmit={handleSubmit}>
-            <VStack spacing={6} align="stretch">
-              <FormControl isRequired>
-                <FormLabel>Username</FormLabel>
-                <Input
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Choose a username"
-                  minLength={3}
-                  maxLength={30}
-                  pattern="[a-zA-Z0-9_-]+"
-                  title="Only letters, numbers, underscores, and hyphens allowed"
-                />
-              </FormControl>
 
-              <FormControl isRequired>
-                <FormLabel>Account Roles</FormLabel>
-                <Stack spacing={4}>
-                  <HStack justify="space-between" width="full">
-                    <Text>Production Crew</Text>
-                    <Switch 
-                      id="production-crew"
-                      isChecked={isProductionCrew}
-                      onChange={handleProductionCrewToggle}
-                      colorScheme="green"
-                      size="lg"
-                    />
-                  </HStack>
-                  <HStack justify="space-between" width="full">
-                    <Text>Event Organizer</Text>
-                    <Switch 
-                      id="event-organizer"
-                      isChecked={isEventOrganizer}
-                      onChange={handleEventOrganizerToggle}
-                      colorScheme="green"
-                      size="lg"
-                    />
-                  </HStack>
+      <Tabs variant="enclosed" colorScheme="green">
+        <TabList>
+          <Tab>Account Information</Tab>
+          <Tab>Profile Settings</Tab>
+        </TabList>
+
+        <TabPanels>
+          <TabPanel>
+            <Card>
+              <CardBody>
+                <Stack spacing={6}>
+                  <form onSubmit={handleSubmit}>
+                    <VStack spacing={4} align="stretch">
+                      <FormControl>
+                        <FormLabel>Username</FormLabel>
+                        <Input
+                          value={username}
+                          onChange={(e) => setUsername(e.target.value)}
+                          placeholder="Enter username"
+                        />
+                      </FormControl>
+
+                      <Box>
+                        <Text mb={2} fontWeight="medium">Roles</Text>
+                        <HStack spacing={4}>
+                          <FormControl display="flex" alignItems="center">
+                            <Switch
+                              id="production-crew"
+                              isChecked={isProductionCrew}
+                              onChange={handleProductionCrewToggle}
+                              colorScheme="green"
+                            />
+                            <FormLabel htmlFor="production-crew" mb="0" ml={2}>
+                              Production Crew
+                            </FormLabel>
+                          </FormControl>
+
+                          <FormControl display="flex" alignItems="center">
+                            <Switch
+                              id="event-organizer"
+                              isChecked={isEventOrganizer}
+                              onChange={handleEventOrganizerToggle}
+                              colorScheme="green"
+                            />
+                            <FormLabel htmlFor="event-organizer" mb="0" ml={2}>
+                              Event Organizer
+                            </FormLabel>
+                          </FormControl>
+                        </HStack>
+                      </Box>
+
+                      <Box>
+                        <Text mb={2} fontWeight="medium">Notifications</Text>
+                        <FormControl display="flex" alignItems="center">
+                          <Switch
+                            id="email-notifications"
+                            isChecked={isEmailNotifications}
+                            onChange={(e) => setIsEmailNotifications(e.target.checked)}
+                            colorScheme="green"
+                          />
+                          <FormLabel htmlFor="email-notifications" mb="0" ml={2}>
+                            Email Notifications
+                          </FormLabel>
+                        </FormControl>
+                      </Box>
+
+                      <Button
+                        type="submit"
+                        colorScheme="green"
+                        isLoading={isLoading}
+                        mt={4}
+                      >
+                        Save Changes
+                      </Button>
+                    </VStack>
+                  </form>
                 </Stack>
-                <Text fontSize="sm" color="whiteAlpha.600" mt={2}>
-                  Select at least one role
-                </Text>
-              </FormControl>
+              </CardBody>
+            </Card>
+          </TabPanel>
 
-              <FormControl>
-                <FormLabel>Active Role</FormLabel>
-                <Badge
-                  colorScheme={user?.activeRole === 'PRODUCTION_CREW' ? 'green' : 'green'}
-                  p={2}
-                  borderRadius="md"
-                >
-                  {user?.activeRole === 'PRODUCTION_CREW' ? 'Production Crew' : 'Event Organizer'}
-                </Badge>
-                <Text fontSize="sm" color="whiteAlpha.600" mt={2}>
-                  Switch roles using the profile menu in the navigation bar
-                </Text>
-              </FormControl>
-
-              <FormControl>
-                <FormLabel>Wallet Address</FormLabel>
-                <Text fontSize="sm" fontFamily="monospace" opacity={0.8}>
-                  {user?.address || 'No wallet connected'}
-                </Text>
-              </FormControl>
-
-              <Button
-                type="submit"
-                colorScheme="green"
-                isLoading={isLoading}
-                mt={4}
-              >
-                Save Changes
-              </Button>
-            </VStack>
-          </form>
-        </CardBody>
-      </Card>
-
-      {/* Notification Settings */}
-      <Card bg="carbon.800" mb={6}>
-        <CardBody>
-          <Heading size="md" mb={4}>Notification Settings</Heading>
-          <FormControl display="flex" alignItems="center">
-            <FormLabel mb="0">
-              Email Notifications
-            </FormLabel>
-            <Switch
-              colorScheme="green"
-              isChecked={isEmailNotifications}
-              onChange={(e) => setIsEmailNotifications(e.target.checked)}
-            />
-          </FormControl>
-        </CardBody>
-      </Card>
+          <TabPanel>
+            <Profile />
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
     </Box>
   );
 };

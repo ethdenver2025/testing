@@ -15,10 +15,10 @@ export const OrganizerDashboard = () => {
       <DashboardSidebar />
       <Box pl="64px" pt="64px">
         <Routes>
-          <Route path="/organizer-dashboard/profile" element={<Profile />} />
-          <Route path="/organizer-dashboard/messages" element={<Messages />} />
-          <Route path="/organizer-dashboard/analytics" element={<Analytics />} />
-          <Route path="/organizer-dashboard" element={<Events />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/messages" element={<Messages />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/" element={<Events />} />
         </Routes>
       </Box>
     </Box>

@@ -9,6 +9,7 @@ import { ProfileSetup } from './pages/ProfileSetup';
 import { CrewDashboard } from './pages/CrewDashboard';
 import { OrganizerDashboard } from './pages/OrganizerDashboard';
 import { AccountSettings } from './pages/AccountSettings';
+import { Profile } from './components/crew/Profile';
 import { Dashboard } from './pages/Dashboard';
 import { theme } from './theme';
 import { wagmiConfig } from './config/zkSyncAuth';
@@ -31,6 +32,7 @@ const App: React.FC = () => {
                 <Route path="/crew-dashboard/*" element={<CrewDashboard />} />
                 <Route path="/organizer-dashboard/*" element={<OrganizerDashboard />} />
                 <Route path="/account-settings" element={<AccountSettings />} />
+                <Route path="/profile" element={<Profile />} />
                 <Route path="/" element={<Login />} />
               </Routes>
             </AuthProvider>

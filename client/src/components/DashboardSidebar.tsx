@@ -10,7 +10,6 @@ import {
 import { Link, useLocation } from 'react-router-dom';
 import { 
   FiBriefcase, 
-  FiUser, 
   FiMessageSquare, 
   FiCalendar,
   FiPieChart,
@@ -27,13 +26,11 @@ export const DashboardSidebar = () => {
     if (isCrewDashboard) {
       return [
         { path: '/', icon: FiBriefcase, label: 'Job Board' },
-        { path: '/profile', icon: FiUser, label: 'Profile' },
         { path: '/messages', icon: FiMessageSquare, label: 'Messages' },
       ];
     }
     return [
       { path: '/', icon: FiCalendar, label: 'Events' },
-      { path: '/profile', icon: FiUser, label: 'Profile' },
       { path: '/messages', icon: FiMessageSquare, label: 'Messages' },
       { path: '/analytics', icon: FiPieChart, label: 'Analytics' },
     ];

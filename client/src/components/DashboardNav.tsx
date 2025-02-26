@@ -88,6 +88,15 @@ export const DashboardNav = () => {
             </Text>
             <MenuDivider />
             
+            <MenuItem
+              icon={<FiSettings />}
+              onClick={() => navigate('/account-settings')}
+              fontWeight="light"
+            >
+              Account Settings
+            </MenuItem>
+            <MenuDivider />
+            
             {user?.userTypes?.length > 1 && (
               <>
                 <MenuItem
@@ -101,13 +110,6 @@ export const DashboardNav = () => {
               </>
             )}
             
-            <MenuItem
-              icon={<FiSettings />}
-              onClick={() => navigate('/account-settings')}
-              fontWeight="light"
-            >
-              Account Settings
-            </MenuItem>
             <MenuItem
               icon={<FiLogOut />}
               onClick={handleLogout}
