@@ -31,16 +31,6 @@ jobs:
         env:
           NODE_ENV: production
 
-      - name: Install Server Dependencies
-        run: |
-          cd server
-          npm ci
-
-      - name: Build Server
-        run: |
-          cd server
-          npm run build
-
       - name: Deploy to VPS
         uses: appleboy/ssh-action@master
         with:
@@ -48,52 +38,21 @@ jobs:
           username: root
           password: ${{ secrets.VPS_ROOT_PASSWORD }}
           script: |
-            # Create deploy user if it doesn't exist
-            id -u deploy &>/dev/null || useradd -m -s /bin/bash deploy
-            echo "deploy:${{ secrets.DEPLOY_PASSWORD }}" | chpasswd
+            cd /var/www/formicary-app
             
-            # Setup application directory
-            mkdir -p /var/www/formicary-app
-            chown -R deploy:deploy /var/www/formicary-app
+            # Pull latest changes
+            git fetch --all
+            git reset --hard origin/${{ github.ref_name }}
             
-            # Install Node.js if not present
-            if ! command -v node &> /dev/null; then
-              curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
-              apt-get install -y nodejs
-            fi
-            
-            # Install PM2 if not present
-            if ! command -v pm2 &> /dev/null; then
-              npm install -g pm2
-            fi
-            
-            # Switch to deploy user and deploy application
-            su - deploy << 'EOF'
-              cd /var/www/formicary-app
-              
-              # Clone/pull repository
-              if [ ! -d ".git" ]; then
-                git clone https://github.com/ethdenver2025/testing.git .
-              else
-                git fetch --all
-                git reset --hard origin/${{ github.ref_name }}
-              fi
-              
-              # Install and build client
-              cd client
-              npm ci
-              npm run build
-              
-              # Install and build server
-              cd ../server
-              npm ci
-              npm run build
-              
-              # Start/restart services with PM2
-              pm2 describe formicary-server > /dev/null || pm2 start npm --name "formicary-server" -- run start
-              pm2 describe formicary-client > /dev/null || pm2 start npm --name "formicary-client" -- run serve
-              
-              pm2 reload formicary-server
-              pm2 reload formicary-client
-              pm2 save
-            EOF
+            # Run deployment script
+            ./scripts/deploy.sh
+
+      - name: Upload Client Build
+        uses: appleboy/scp-action@master
+        with:
+          host: 104.251.216.17
+          username: root
+          password: ${{ secrets.VPS_ROOT_PASSWORD }}
+          source: "client/dist/*"
+          target: "/var/www/formicary-app/client/build"
+          strip_components: 2
