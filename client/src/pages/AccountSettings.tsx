@@ -38,6 +38,7 @@ import { FiSave, FiArrowLeft, FiMoon, FiSun, FiCopy, FiPlus } from 'react-icons/
 import { useAuth, UserType } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Profile } from '../components/crew/Profile';
+import { TrustProfile } from '../components/crew/TrustProfile';
 
 export const AccountSettings = () => {
   const { user, updateProfile } = useAuth();
@@ -161,6 +162,7 @@ export const AccountSettings = () => {
           <TabList>
             <Tab>Account Information</Tab>
             <Tab>Profile Settings</Tab>
+            <Tab>Trust Profile</Tab>
             <Tab>Preferences</Tab>
             <Tab>Security</Tab>
           </TabList>
@@ -256,6 +258,18 @@ export const AccountSettings = () => {
 
             <TabPanel>
               <Profile />
+            </TabPanel>
+
+            <TabPanel>
+              {user && user.id ? (
+                <TrustProfile userId={user.id} />
+              ) : (
+                <Card>
+                  <CardBody>
+                    <Text>Your trust profile will be available once you've connected your wallet or received attestations.</Text>
+                  </CardBody>
+                </Card>
+              )}
             </TabPanel>
 
             <TabPanel>

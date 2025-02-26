@@ -7,6 +7,7 @@ import { TokenResponse } from '@react-oauth/google';
 export type UserType = 'PRODUCTION_CREW' | 'EVENT_ORGANIZER';
 
 interface User {
+  id: string;
   address?: string;
   username: string;
   email?: string;
@@ -24,6 +25,7 @@ interface AuthContextType {
   logout: () => void;
   updateProfile: (profile: { username: string; userTypes: UserType[] }) => Promise<void>;
   switchRole: (role: UserType) => void;
+  handleMockAuth: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -49,6 +51,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Initialize user with wallet address
       setUser({
+        id: '',
         address: walletAddress,
         username: '',
         userTypes: []
@@ -94,6 +97,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Initialize user with Google info
       setUser({
+        id: '',
         username: userInfo.name || '',
         email: userInfo.email,
         userTypes: []
@@ -153,6 +157,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     navigate(dashboardPath);
   }, [user, navigate]);
 
+  // Mock authentication for development purposes
+  const handleMockAuth = useCallback(() => {
+    const mockUser = {
+      id: 'user_001', // Simulate a user ID
+      username: 'JaneDoe',
+      email: 'jane@example.com',
+      userTypes: ['PRODUCTION_CREW', 'EVENT_ORGANIZER'] as UserType[],
+      address: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F'
+    };
+
+    localStorage.setItem('user', JSON.stringify(mockUser));
+    localStorage.setItem('token', 'mock_jwt_token');
+    setUser(mockUser);
+    navigate('/dashboard');
+  }, [navigate]);
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -163,7 +183,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       loginWithGoogle,
       logout,
       updateProfile,
-      switchRole
+      switchRole,
+      handleMockAuth
     }}>
       {children}
     </AuthContext.Provider>

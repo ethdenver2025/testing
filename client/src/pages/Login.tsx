@@ -9,14 +9,17 @@ import {
   useToast,
   useColorModeValue,
   Icon,
+  HStack,
+  Divider,
 } from '@chakra-ui/react';
 import { FaWallet } from 'react-icons/fa';
 import { FcGoogle } from 'react-icons/fc';
+import { FiUser } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
 import { useGoogleLogin } from '@react-oauth/google';
 
 export const Login = () => {
-  const { loginWithWallet, loginWithGoogle } = useAuth();
+  const { loginWithWallet, loginWithGoogle, handleMockAuth } = useAuth();
   const toast = useToast();
   const bgColor = useColorModeValue('white', 'gray.800');
   const borderColor = useColorModeValue('gray.200', 'gray.700');
@@ -30,7 +33,7 @@ export const Login = () => {
     }
   };
 
-  const handleGoogleLogin = useGoogleLogin({
+  const googleLogin = useGoogleLogin({
     onSuccess: async (response) => {
       try {
         await loginWithGoogle(response);
@@ -78,28 +81,43 @@ export const Login = () => {
             </Text>
           </VStack>
 
-          <VStack spacing={4} w="full">
+          <VStack spacing={5} w="full" maxW="sm">
             <Button
-              leftIcon={<Icon as={FcGoogle} />}
-              onClick={() => handleGoogleLogin()}
-              colorScheme="gray"
-              width="full"
-              size="lg"
-            >
-              Sign in with Google
-            </Button>
-
-            <Text color="gray.500" fontSize="sm">or</Text>
-
-            <Button
-              leftIcon={<Icon as={FaWallet} />}
               onClick={handleWalletLogin}
-              colorScheme="green"
-              width="full"
-              size="lg"
+              w="full"
+              colorScheme="blue"
+              leftIcon={<Icon as={FaWallet} />}
             >
               Connect Wallet
             </Button>
+
+            <Button
+              w="full"
+              variant="outline"
+              onClick={googleLogin}
+              leftIcon={<Icon as={FcGoogle} />}
+            >
+              Continue with Google
+            </Button>
+
+            {process.env.NODE_ENV === 'development' && (
+              <>
+                <Divider />
+                <HStack w="full">
+                  <Divider />
+                  <Text fontSize="sm" color="gray.500">FOR DEVELOPMENT</Text>
+                  <Divider />
+                </HStack>
+                <Button
+                  w="full"
+                  colorScheme="green"
+                  leftIcon={<Icon as={FiUser} />}
+                  onClick={handleMockAuth}
+                >
+                  Mock Login (Dev Only)
+                </Button>
+              </>
+            )}
           </VStack>
         </VStack>
       </Box>
