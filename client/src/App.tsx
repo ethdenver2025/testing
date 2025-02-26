@@ -1,48 +1,43 @@
 import React from 'react';
-import { ChakraProvider, extendTheme, CSSReset } from '@chakra-ui/react';
-import { WorkerDashboard } from './components/WorkerDashboard/WorkerDashboard';
-import { WalletProvider } from './contexts/WalletContext';
-import { DashboardProvider } from './contexts/DashboardContext';
-import { MetaDashboard } from './components/MetaDashboard/MetaDashboard';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ChakraProvider } from '@chakra-ui/react';
+import { WagmiProvider } from 'wagmi';
+import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+import { Login } from './pages/Login';
+import { ProfileSetup } from './pages/ProfileSetup';
+import { CrewDashboard } from './pages/CrewDashboard';
+import { OrganizerDashboard } from './pages/OrganizerDashboard';
+import { AccountSettings } from './pages/AccountSettings';
+import { Dashboard } from './pages/Dashboard';
+import { theme } from './theme';
+import { wagmiConfig } from './config/zkSyncAuth';
+import { AuthProvider } from './contexts/AuthContext';
 
-// Extend the theme to include custom colors, fonts, etc
-const theme = extendTheme({
-  config: {
-    initialColorMode: 'light',
-    useSystemColorMode: true,
-  },
-  colors: {
-    brand: {
-      50: '#E6F6FF',
-      100: '#BAE3FF',
-      200: '#7CC4FA',
-      300: '#47A3F3',
-      400: '#2186EB',
-      500: '#0967D2',
-      600: '#0552B5',
-      700: '#03449E',
-      800: '#01337D',
-      900: '#002159',
-    },
-  },
-});
-
-const mockWorker = {
-  name: 'John Doe',
-  reputationScore: 4.8,
-  skillTier: 'Expert',
-};
+// Create a client for React Query
+const queryClient = new QueryClient();
 
 const App: React.FC = () => {
   return (
-    <ChakraProvider theme={theme}>
-      <CSSReset />
-      <WalletProvider>
-        <DashboardProvider>
-          <MetaDashboard />
-        </DashboardProvider>
-      </WalletProvider>
-    </ChakraProvider>
+    <WagmiProvider config={wagmiConfig}>
+      <QueryClientProvider client={queryClient}>
+        <ChakraProvider theme={theme}>
+          <Router>
+            <AuthProvider>
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/profile-setup" element={<ProfileSetup />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/crew-dashboard/*" element={<CrewDashboard />} />
+                <Route path="/organizer-dashboard/*" element={<OrganizerDashboard />} />
+                <Route path="/account-settings" element={<AccountSettings />} />
+                <Route path="/" element={<Login />} />
+              </Routes>
+            </AuthProvider>
+          </Router>
+        </ChakraProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
   );
 };
 

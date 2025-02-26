@@ -4,64 +4,155 @@ import {
   Container,
   Flex,
   Heading,
-  VStack,
   Text,
-  useColorModeValue,
+  Button,
+  VStack,
+  HStack,
+  Avatar,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  Divider,
+  Grid,
+  Stat,
+  StatLabel,
+  StatNumber,
+  StatHelpText,
 } from '@chakra-ui/react';
-import { WalletConnect } from '../shared/WalletConnect';
-import { EarningsOverview } from '../earnings/EarningsOverview';
-import { useWallet } from '../../hooks/useWallet';
+import { ChevronDownIcon } from '@chakra-ui/icons';
+import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
-export interface WorkerDashboardProps {
-  worker?: {
-    name: string;
-    reputationScore: number;
-    totalEarnings: number;
-    jobsCompleted: number;
+export const WorkerDashboard = () => {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
   };
-}
 
-export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ worker }) => {
-  const { isConnected } = useWallet();
-  const bgColor = useColorModeValue('white', 'gray.800');
-  const borderColor = useColorModeValue('gray.200', 'gray.700');
+  // Mock data for development
+  const mockStats = {
+    totalEarnings: '1,234.56',
+    activeJobs: '3',
+    completedJobs: '12',
+    reputation: '4.8'
+  };
 
-  const mockEarnings = [
-    { date: '2025-02-20', amount: 1500, currency: 'USD', jobCount: 3 },
-    { date: '2025-02-21', amount: 2000, currency: 'USD', jobCount: 4 },
-    { date: '2025-02-22', amount: 2500, currency: 'USD', jobCount: 2 },
-  ];
+  // Don't render anything while checking auth status
+  if (!user || !user.isProfileComplete) {
+    return null;
+  }
 
   return (
-    <Container maxW="container.xl" py={8}>
-      <Flex justify="space-between" align="center" mb={8}>
-        <VStack align="start" spacing={1}>
-          <Heading size="lg">
-            {worker ? `${worker.name}'s Dashboard` : 'Worker Dashboard'}
-          </Heading>
-          <Text color="gray.600">Manage your worker profile and earnings</Text>
-        </VStack>
-        <WalletConnect />
-      </Flex>
+    <Box minH="100vh" bg="carbon.900">
+      {/* Header/Navigation */}
+      <Box bg="carbon.800" py={4} px={6} borderBottom="1px" borderColor="carbon.700">
+        <Container maxW="container.xl">
+          <Flex justify="space-between" align="center">
+            <Heading size="md" color="carbon.100">Formicary</Heading>
+            
+            <Menu>
+              <MenuButton
+                as={Button}
+                rightIcon={<ChevronDownIcon />}
+                variant="ghost"
+                color="carbon.100"
+                _hover={{ bg: 'carbon.700' }}
+              >
+                <HStack spacing={2}>
+                  <Avatar size="sm" name={user.username} />
+                  <Text>{user.username}</Text>
+                </HStack>
+              </MenuButton>
+              <MenuList bg="carbon.800" borderColor="carbon.700">
+                <MenuItem 
+                  onClick={handleLogout}
+                  _hover={{ bg: 'carbon.700' }}
+                  color="carbon.100"
+                >
+                  Logout
+                </MenuItem>
+              </MenuList>
+            </Menu>
+          </Flex>
+        </Container>
+      </Box>
 
-      {!isConnected ? (
-        <Box
-          p={8}
-          bg={bgColor}
-          borderRadius="lg"
-          borderWidth={1}
-          borderColor={borderColor}
-          textAlign="center"
-        >
-          <Text fontSize="lg" mb={4}>
-            Connect your wallet to view your worker dashboard
-          </Text>
-        </Box>
-      ) : (
+      {/* Main Content */}
+      <Container maxW="container.xl" py={8}>
         <VStack spacing={8} align="stretch">
-          <EarningsOverview data={mockEarnings} />
+          {/* Welcome Section */}
+          <Box bg="carbon.800" p={6} borderRadius="lg">
+            <VStack align="start" spacing={4}>
+              <Heading size="lg" color="carbon.100">
+                Welcome back, {user.username}!
+              </Heading>
+              <Text color="carbon.300">
+                {user.authMethod === 'wallet' 
+                  ? `Connected with wallet: ${user.address?.slice(0, 6)}...${user.address?.slice(-4)}`
+                  : `Signed in with Google: ${user.email}`
+                }
+              </Text>
+              {user.bio && (
+                <>
+                  <Divider borderColor="carbon.700" />
+                  <Text color="carbon.300">{user.bio}</Text>
+                </>
+              )}
+            </VStack>
+          </Box>
+
+          {/* Stats Grid */}
+          <Grid templateColumns="repeat(4, 1fr)" gap={6}>
+            <Box bg="carbon.800" p={6} borderRadius="lg">
+              <Stat>
+                <StatLabel color="carbon.300">Total Earnings</StatLabel>
+                <StatNumber color="green.400" fontSize="2xl">${mockStats.totalEarnings}</StatNumber>
+                <StatHelpText color="carbon.400">All time earnings</StatHelpText>
+              </Stat>
+            </Box>
+
+            <Box bg="carbon.800" p={6} borderRadius="lg">
+              <Stat>
+                <StatLabel color="carbon.300">Active Jobs</StatLabel>
+                <StatNumber color="blue.400" fontSize="2xl">{mockStats.activeJobs}</StatNumber>
+                <StatHelpText color="carbon.400">Currently in progress</StatHelpText>
+              </Stat>
+            </Box>
+
+            <Box bg="carbon.800" p={6} borderRadius="lg">
+              <Stat>
+                <StatLabel color="carbon.300">Completed Jobs</StatLabel>
+                <StatNumber color="purple.400" fontSize="2xl">{mockStats.completedJobs}</StatNumber>
+                <StatHelpText color="carbon.400">Successfully delivered</StatHelpText>
+              </Stat>
+            </Box>
+
+            <Box bg="carbon.800" p={6} borderRadius="lg">
+              <Stat>
+                <StatLabel color="carbon.300">Reputation</StatLabel>
+                <StatNumber color="yellow.400" fontSize="2xl">{mockStats.reputation}</StatNumber>
+                <StatHelpText color="carbon.400">Average rating</StatHelpText>
+              </Stat>
+            </Box>
+          </Grid>
+
+          {/* Recent Activity */}
+          <Box bg="carbon.800" p={6} borderRadius="lg">
+            <VStack align="start" spacing={4}>
+              <Heading size="md" color="carbon.100">Recent Activity</Heading>
+              <Text color="carbon.300">No recent activity to display.</Text>
+            </VStack>
+          </Box>
         </VStack>
-      )}
-    </Container>
+      </Container>
+    </Box>
   );
 };

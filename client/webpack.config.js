@@ -2,35 +2,48 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
 const webpack = require('webpack');
-const TerserPlugin = require('terser-webpack-plugin');
 
 module.exports = (env, argv) => {
   const isProduction = argv.mode === 'production';
-  const publicPath = isProduction ? '/formicary-app/' : '/';
-
   return {
     mode: argv.mode || 'development',
     entry: './src/index.tsx',
     output: {
       path: path.resolve(__dirname, 'dist'),
       filename: isProduction ? '[name].[contenthash].js' : '[name].js',
-      publicPath: isProduction ? '/formicary-app/' : '/',
+      publicPath: '/',
       clean: true
+    },
+    devServer: {
+      static: {
+        directory: path.join(__dirname, 'public'),
+      },
+      port: 3001,
+      historyApiFallback: true,
+      hot: true,
+      open: true,
+    },
+    resolve: {
+      extensions: ['.tsx', '.ts', '.js', '.jsx'],
+      fallback: {
+        "stream": require.resolve("stream-browserify"),
+        "crypto": require.resolve("crypto-browserify"),
+        "http": require.resolve("stream-http"),
+        "https": require.resolve("https-browserify"),
+        "os": require.resolve("os-browserify/browser"),
+        "buffer": require.resolve("buffer/")
+      },
+      alias: {
+        '@': path.resolve(__dirname, 'src'),
+      },
     },
     module: {
       rules: [
         {
           test: /\.(js|jsx|ts|tsx|mjs)$/,
-          exclude: /node_modules\/(?!(@chakra-ui|@emotion|framer-motion|react-icons)\/).*/,
+          exclude: /node_modules/,
           use: {
-            loader: 'babel-loader',
-            options: {
-              presets: [
-                '@babel/preset-env',
-                '@babel/preset-react',
-                '@babel/preset-typescript'
-              ]
-            }
+            loader: 'babel-loader'
           }
         },
         {
@@ -38,84 +51,34 @@ module.exports = (env, argv) => {
           use: ['style-loader', 'css-loader']
         },
         {
-          test: /\.(png|svg|jpg|jpeg|gif)$/i,
-          type: 'asset/resource'
-        },
-        {
-          test: /\.(woff|woff2|eot|ttf|otf)$/i,
+          test: /\.(png|svg|jpg|jpeg|gif|ico)$/i,
           type: 'asset/resource'
         }
       ]
     },
-    resolve: {
-      extensions: ['.tsx', '.ts', '.js', '.jsx', '.mjs', '.cjs', '.json'],
-      mainFields: ['module', 'main', 'browser'],
-      alias: {
-        '@': path.resolve(__dirname, 'src'),
-        '@components': path.resolve(__dirname, 'src/components'),
-        '@hooks': path.resolve(__dirname, 'src/hooks'),
-        '@services': path.resolve(__dirname, 'src/services'),
-        '@utils': path.resolve(__dirname, 'src/utils'),
-        '@contracts': path.resolve(__dirname, 'src/contracts')
-      },
-      fallback: {
-        "util": require.resolve("util/"),
-        "stream": require.resolve("stream-browserify"),
-        "crypto": require.resolve("crypto-browserify"),
-        "http": require.resolve("stream-http"),
-        "https": require.resolve("https-browserify"),
-        "os": require.resolve("os-browserify/browser"),
-        "buffer": require.resolve("buffer/")
-      }
-    },
     plugins: [
       new HtmlWebpackPlugin({
-        template: './public/index.html',
-        minify: isProduction,
-        publicPath: isProduction ? '/formicary-app/' : '/'
+        template: path.resolve(__dirname, 'public', 'index.html'),
+        inject: true,
+        minify: isProduction ? {
+          removeComments: true,
+          collapseWhitespace: true,
+          removeRedundantAttributes: true,
+          useShortDoctype: true,
+          removeEmptyAttributes: true,
+          removeStyleLinkTypeAttributes: true,
+          keepClosingSlash: true,
+          minifyJS: true,
+          minifyCSS: true,
+          minifyURLs: true,
+        } : false,
       }),
-      new Dotenv({
-        path: '.env',
-        systemvars: true
-      }),
+      new Dotenv(),
       new webpack.ProvidePlugin({
-        React: 'react',
         Buffer: ['buffer', 'Buffer'],
-        process: 'process/browser'
-      })
+        process: 'process/browser',
+        React: 'react'
+      }),
     ],
-    optimization: {
-      minimize: isProduction,
-      minimizer: [
-        new TerserPlugin({
-          terserOptions: {
-            compress: {
-              drop_console: isProduction
-            }
-          }
-        })
-      ],
-      splitChunks: {
-        chunks: 'all',
-        name: false
-      }
-    },
-    devServer: {
-      static: {
-        directory: path.join(__dirname, 'public')
-      },
-      historyApiFallback: true,
-      port: 3001,
-      hot: true,
-      host: '127.0.0.1',
-      open: true,
-      client: {
-        overlay: {
-          errors: true,
-          warnings: false
-        }
-      }
-    },
-    devtool: isProduction ? 'source-map' : 'eval-source-map'
   };
 };

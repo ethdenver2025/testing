@@ -60,8 +60,22 @@ formicary-app/
 │   │   └── contracts/     # Smart contract ABIs
 │   ├── public/            # Static assets
 │   └── package.json       # Dependencies and scripts
+├── .ai_context.txt        # AI development context and history
 └── README.md
 ```
+
+## Development Process
+
+### AI-Assisted Development
+
+The project uses AI-assisted development to maintain consistency and track architectural decisions. The `.ai_context.txt` file in the root directory contains:
+
+- Project vision and intent
+- Technical architecture details
+- Version history and iteration reviews
+- Development guidelines
+
+This context file should be reviewed when making significant changes to understand the project's evolution and maintain consistent development patterns.
 
 ## Contributing
 

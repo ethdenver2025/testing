@@ -1,9 +1,7 @@
 import express from 'express';
 import cors from 'cors';
-import { ApolloServer } from '@apollo/server';
-import { expressMiddleware } from '@apollo/server/express4';
-import { makeExecutableSchema } from '@graphql-tools/schema';
 import dotenv from 'dotenv';
+import profileRoutes from './routes/profile';
 
 // Load environment variables
 dotenv.config();
@@ -12,44 +10,30 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// Define base GraphQL schema
-const typeDefs = `#graphql
-  type Query {
-    health: String!
-  }
-`;
-
-const resolvers = {
-  Query: {
-    health: () => 'OK',
-  },
-};
-
-const schema = makeExecutableSchema({
-  typeDefs,
-  resolvers,
-});
-
 async function startServer() {
-  // Create Apollo Server
-  const server = new ApolloServer({
-    schema,
-  });
+  try {
+    // Apply middleware
+    app.use(cors({
+      origin: process.env.CLIENT_URL || 'http://localhost:3000',
+      credentials: true
+    }));
+    app.use(express.json());
 
-  // Start the server
-  await server.start();
+    // Routes
+    app.use('/api/profile', profileRoutes);
 
-  // Apply middleware
-  app.use(cors());
-  app.use(express.json());
-  app.use('/graphql', expressMiddleware(server));
+    // Health check
+    app.get('/health', (_, res) => res.json({ status: 'OK' }));
 
-  // Start express server
-  app.listen(PORT, () => {
-    console.log(`🚀 Server ready at http://localhost:${PORT}/graphql`);
-  });
+    // Start the server
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
 }
 
-startServer().catch(error => {
-  console.error('Failed to start server:', error);
-});
+// Start the server
+startServer();

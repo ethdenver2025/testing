@@ -1,0 +1,130 @@
+# AI Context: Formicary Project
+Last Updated: 2025-02-25
+
+## Project Intent & Vision
+Formicary is a decentralized labor coordination platform that revolutionizes workforce management through AI-driven matching and blockchain-based trust systems. The platform facilitates:
+
+- On-demand workforce coordination across multiple industries
+- Web-of-trust reputation system with AI validation
+- USDC-based escrow payments and transparent bidding
+- Peer-validated skill progression system
+- DAO-based governance with liquid democracy
+- AI-powered dispute resolution
+
+## Core Technical Architecture
+
+### Blockchain Technologies & AI Integration
+
+1. Hedera AI Agent Kit Integration:
+   - Decentralized Identity (DID) management for workers
+   - Consensus Service (HCS) for immutable reputation tracking
+   - Hedera File Service (HFS) for credential storage
+   - Smart contract deployment for escrow and payments
+   - AI-driven reputation validation and job matching
+
+2. Base AI Agent Kit Integration:
+   - Layer 2 optimized smart contract deployment
+   - Scalable payment and escrow systems
+   - Optimistic rollup for cost-effective transactions
+   - AI-powered transaction optimization
+
+3. Internet Computer Protocol (ICP) Integration:
+   - Canister-based AI agent deployment
+   - WebAssembly optimization for AI workloads
+   - Chain-key cryptography for secure operations
+   - Native HTTPS outcalls for external API integration
+   - Autonomous AI agent hosting for job matching
+   - Distributed computing for reputation analysis
+
+### AI Systems Architecture
+
+1. Job Matching Engine:
+   - ML-based worker-to-job assignment
+   - Reputation score integration
+   - Availability and skill matching
+   - Demand forecasting and supply optimization
+
+2. Reputation Management:
+   - LLM-powered feedback analysis
+   - Abuse prevention systems
+   - Fair rating validation
+   - Historical performance tracking
+
+3. Dispute Resolution:
+   - Case history analysis
+   - Precedent-based resolution suggestions
+   - Evidence validation and processing
+   - Automated penalty assessment
+
+## Key Components
+
+1. Worker Dashboard:
+   - AI-driven job recommendations
+   - Skill progression tracking
+   - Reputation management
+   - Payment/escrow monitoring
+   - Training modules
+
+2. Client Dashboard:
+   - Project management
+   - Labor pool bidding
+   - AI-assisted worker selection
+   - Payment approval system
+
+3. DAO Governance:
+   - Liquid democracy implementation
+   - Proposal management
+   - Community resource allocation
+   - Benefit distribution
+
+## Technical Stack
+
+- Frontend: React PWA with Chakra UI
+- Backend: Express.js with GraphQL
+- Database: Prisma ORM
+- Authentication: ZKSync SSO SDK
+- Storage: Web3:// (ERC-4804), IPFS/Arweave
+- Smart Contracts: Multi-chain deployment (Hedera, Base, ICP)
+
+## Version History
+
+### v0.1.0 (Current) - Initial Architecture
+- Core system architecture implementation
+- Basic blockchain integrations
+- Initial AI agent deployment
+- Authentication system setup
+
+### Iteration Reviews
+
+#### v0.1.1 - Dashboard & Role Management
+- Implemented role-based dashboard navigation
+- Added independent role toggles in account settings
+- Fixed role switching functionality in profile menu
+- Improved user experience with proper route handling
+- Key components affected:
+  - DashboardNav: Added role switch in profile menu
+  - AccountSettings: Fixed role toggle independence
+  - CrewDashboard: Updated routing and layout
+  - OrganizerDashboard: Updated routing and layout
+
+## Development Guidelines
+
+1. AI Integration Principles:
+   - Prioritize explainable AI decisions
+   - Implement fail-safes for AI systems
+   - Maintain human oversight capabilities
+
+2. Blockchain Integration:
+   - Cross-chain communication protocols
+   - Multi-chain transaction management
+   - Secure state synchronization
+
+3. Security Considerations:
+   - Zero-knowledge proof implementations
+   - Multi-sig security measures
+   - Regular security audits
+
+---
+Note: This context file is maintained for AI collaboration and should be updated with each significant architectural decision or feature implementation.
+
+Important: Digest previous ai-context files from the commit structure. When updating, make sure to renew the iterated review section in the ai-context.txt. Don't change the main text unless absolutely necessary.
