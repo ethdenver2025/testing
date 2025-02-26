@@ -18,15 +18,13 @@ cd server
 npm install
 cd ..
 
-# Setup and build client
-cd client
-npm install
-npm run build
-cd ..
+# Remove old build directory and create new one
+rm -rf client/build
+mkdir -p client/build
 
-# Fix client build permissions
-chown -R www-data:www-data client/build/
-chmod -R 755 client/build/
+# Set permissions for the build directory
+chown -R www-data:www-data client/build
+chmod -R 755 client/build
 
 # Configure Nginx
 cat > /etc/nginx/sites-available/formicary-app << 'EOF'
@@ -64,4 +62,6 @@ pm2 start index.js --name formicary-server
 # Save PM2 configuration
 pm2 save
 
-echo "Deployment complete! The application should be running at http://104.251.216.17"
+echo "Server deployment complete!"
+echo "Now run this command locally to deploy the client:"
+echo "scp -r client/dist/* root@104.251.216.17:/var/www/formicary-app/client/build/"
