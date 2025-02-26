@@ -15,23 +15,21 @@ import { FcGoogle } from 'react-icons/fc';
 import { useAuth } from '../../contexts/AuthContext';
 import { useGoogleLogin } from '@react-oauth/google';
 import { useNavigate } from 'react-router-dom';
-import { useZkSyncAuth } from '../../hooks/useZkSyncAuth';
 
 export const Login: React.FC = () => {
-  const { loginWithGoogle, loginWithZkSync, isLoading, user } = useAuth();
-  const { connect: connectWallet } = useZkSyncAuth();
+  const { loginWithWallet, loginWithGoogle, isLoading, user } = useAuth();
   const toast = useToast();
   const navigate = useNavigate();
 
   React.useEffect(() => {
-    if (user?.isProfileComplete) {
+    if (user?.username) {
       navigate('/dashboard');
     }
   }, [user, navigate]);
 
   const handleWalletConnect = async () => {
     try {
-      await loginWithZkSync();
+      await loginWithWallet();
     } catch (error) {
       if (error instanceof Error && error.message.includes('MetaMask is not installed')) {
         toast({
@@ -48,32 +46,13 @@ export const Login: React.FC = () => {
           duration: 10000,
           isClosable: true,
         });
-      } else {
-        toast({
-          title: 'Connection Failed',
-          description: error instanceof Error ? error.message : 'Failed to connect wallet',
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
       }
+      // Other errors are handled by AuthContext
     }
   };
 
   const handleGoogleLogin = useGoogleLogin({
-    onSuccess: async (response) => {
-      try {
-        await loginWithGoogle(response);
-      } catch (error) {
-        toast({
-          title: 'Login Failed',
-          description: 'Failed to login with Google. Please try again.',
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
-      }
-    },
+    onSuccess: loginWithGoogle,
     onError: (error) => {
       toast({
         title: 'Google Login Failed',

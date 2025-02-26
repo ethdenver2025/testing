@@ -2,12 +2,14 @@ import React, { createContext, useContext, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@chakra-ui/react';
 import { useZkSyncAuth } from '../hooks/useZkSyncAuth';
+import { TokenResponse } from '@react-oauth/google';
 
 export type UserType = 'PRODUCTION_CREW' | 'EVENT_ORGANIZER';
 
 interface User {
-  address: string;
+  address?: string;
   username: string;
+  email?: string;
   userTypes: UserType[];
   activeRole?: UserType;
 }
@@ -17,7 +19,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   error: Error | null;
-  login: () => Promise<void>;
+  loginWithWallet: () => Promise<void>;
+  loginWithGoogle: (response: TokenResponse) => Promise<void>;
   logout: () => void;
   updateProfile: (profile: { username: string; userTypes: UserType[] }) => Promise<void>;
   switchRole: (role: UserType) => void;
@@ -33,7 +36,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const toast = useToast();
   const { connectWallet, handleDisconnect, isConnected, address } = useZkSyncAuth();
 
-  const login = useCallback(async () => {
+  const loginWithWallet = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -68,6 +71,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setIsLoading(false);
     }
   }, [connectWallet, navigate, toast]);
+
+  const loginWithGoogle = useCallback(async (response: TokenResponse) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      // TODO: Verify token with backend
+      // For now, just use the access token to get user info
+      const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: {
+          Authorization: `Bearer ${response.access_token}`,
+        },
+      });
+
+      if (!userInfoResponse.ok) {
+        throw new Error('Failed to get user info from Google');
+      }
+
+      const userInfo = await userInfoResponse.json();
+      console.log('Google user info:', userInfo); // Debug log
+
+      // Initialize user with Google info
+      setUser({
+        username: userInfo.name || '',
+        email: userInfo.email,
+        userTypes: []
+      });
+
+      // Redirect to profile setup if no username
+      navigate('/profile-setup');
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Failed to get Google user info');
+      setError(error);
+      toast({
+        title: 'Login Failed',
+        description: error.message,
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [navigate, toast]);
 
   const logout = useCallback(() => {
     handleDisconnect();
@@ -112,7 +159,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isAuthenticated: !!user,
       isLoading,
       error,
-      login,
+      loginWithWallet,
+      loginWithGoogle,
       logout,
       updateProfile,
       switchRole

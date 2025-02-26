@@ -19,6 +19,7 @@ model User {
   bio           String?
   isProfileComplete Boolean @default(false)
   authMethod    AuthMethod
+  roles         UserRole[]
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   profile       Profile?
@@ -68,4 +69,9 @@ enum TaskStatus {
 enum AuthMethod {
   WALLET
   GOOGLE
+}
+
+enum UserRole {
+  PRODUCTION_CREW
+  EVENT_ORGANIZER
 }
