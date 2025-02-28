@@ -373,69 +373,7 @@ interface NavItem {
 }
 
 const NAV_ITEMS: Array<NavItem> = [
-  {
-    label: 'Dashboard',
-    href: '/dashboard',
-  },
-  {
-    label: 'Crew',
-    href: '/crew',
-    icon: FaUsers,
-    children: [
-      {
-        label: 'Find Crew',
-        subLabel: 'Browse trusted crew members',
-        href: '/crew',
-      },
-      {
-        label: 'Trust Profiles',
-        subLabel: 'View attestations and trust scores',
-        href: '/crew',
-        isNew: true,
-      },
-    ],
-  },
-  {
-    label: 'Events',
-    href: '/events',
-    icon: FaCalendarAlt,
-    children: [
-      {
-        label: 'Find Events',
-        subLabel: 'Browse available production opportunities',
-        href: '/events',
-      },
-      {
-        label: 'Create Event',
-        subLabel: 'Start a new production with trusted crew',
-        href: '/events/create',
-        isNew: true,
-      },
-      {
-        label: 'My Events',
-        subLabel: 'View events you\'re participating in',
-        href: '/events/mine',
-      },
-    ],
-  },
-  {
-    label: 'Attestations',
-    href: '/attestations',
-    icon: FaCertificate,
-    isNew: true,
-    children: [
-      {
-        label: 'My Attestations',
-        subLabel: 'View attestations you\'ve received',
-        href: '/attestations/received',
-      },
-      {
-        label: 'Create Attestation',
-        subLabel: 'Attest to someone\'s skills or work ethic',
-        href: '/attestations/create',
-      },
-    ],
-  },
+  // Dashboard, Crew, Events, and Attestations links have been removed from the header as requested
 ];
 
 const useBreakpointValue = (values: any) => {
