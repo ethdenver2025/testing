@@ -137,26 +137,3 @@ npm run test        # Run server tests
 ```
 
 ## Development Process
-
-### AI-Assisted Development
-
-The project uses AI-assisted development to maintain consistency and track architectural decisions. The `.ai_context.txt` file in the root directory contains:
-
-- Project vision and intent
-- Technical architecture details
-- Version history and iteration reviews
-- Development guidelines
-
-This context file should be reviewed when making significant changes to understand the project's evolution and maintain consistent development patterns.
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
