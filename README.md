@@ -1,14 +1,30 @@
 # Formicary App
 
+[![Build Status](https://img.shields.io/github/actions/workflow/status/ethdenver2025/testing/build.yml?branch=main)](https://github.com/ethdenver2025/testing/actions)
+[![License](https://img.shields.io/github/license/ethdenver2025/testing)](https://github.com/ethdenver2025/testing/blob/main/LICENSE)
+[![Release](https://img.shields.io/github/v/release/ethdenver2025/testing)](https://github.com/ethdenver2025/testing/releases)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/ethdenver2025/testing/pulls)
+
 A decentralized platform for managing and executing tasks in a distributed worker network.
 
 ## Features
 
-- Web3 Wallet Integration
-- Worker Dashboard
-- Task Management
+- Web3 Wallet Integration with zkSync SSO
+- Smart Wallet Authentication
+- Worker Dashboard for Task Management
+- Organization Management Interface
 - Real-time Earnings Tracking
 - Performance Analytics
+- Multi-role Support (Crew and Organizers)
+
+## Tech Stack
+
+- **Frontend**: React, TypeScript, Chakra UI
+- **Blockchain**: Ethereum, zkSync
+- **Authentication**: zkSync SSO, Web3 Wallets
+- **State Management**: React Context, React Query
+- **Wallet Connection**: wagmi v2, viem v2
+- **Routing**: React Router v6
 
 ## Getting Started
 
@@ -22,8 +38,8 @@ A decentralized platform for managing and executing tasks in a distributed worke
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/formicary-app.git
-cd formicary-app
+git clone https://github.com/ethdenver2025/testing.git
+cd testing
 ```
 
 2. Install dependencies:
@@ -32,52 +48,31 @@ cd client
 npm install
 ```
 
-3. Start the development server:
+3. Set up environment variables by creating a `.env` file based on `.env.example`.
+
+4. Start the development server:
 ```bash
 npm run dev
 ```
 
-The app will be available at http://127.0.0.1:3005
+## Building for Production
 
-## Development Stack
-
-- React 18
-- TypeScript
-- Chakra UI
-- Ethers.js
-- Webpack 5
-
-## Project Structure
-
-```
-formicary-app/
-├── client/
-│   ├── src/
-│   │   ├── components/     # React components
-│   │   ├── hooks/         # Custom React hooks
-│   │   ├── services/      # API and blockchain services
-│   │   ├── utils/         # Utility functions
-│   │   └── contracts/     # Smart contract ABIs
-│   ├── public/            # Static assets
-│   └── package.json       # Dependencies and scripts
-├── .ai_context.txt        # AI development context and history
-└── README.md
+```bash
+npm run build
 ```
 
-## Development Process
+## Development
 
-### AI-Assisted Development
+### Code Structure
 
-The project uses AI-assisted development to maintain consistency and track architectural decisions. The `.ai_context.txt` file in the root directory contains:
+- `/client` - Frontend React application
+  - `/src/components` - Reusable UI components
+  - `/src/contexts` - React context providers
+  - `/src/hooks` - Custom React hooks
+  - `/src/pages` - Page components
+  - `/src/config` - Configuration files
 
-- Project vision and intent
-- Technical architecture details
-- Version history and iteration reviews
-- Development guidelines
-
-This context file should be reviewed when making significant changes to understand the project's evolution and maintain consistent development patterns.
-
-## Contributing
+### Contributing
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/amazing-feature`)
@@ -88,3 +83,7 @@ This context file should be reviewed when making significant changes to understa
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Support
+
+For support, please open an issue on the GitHub repository.
