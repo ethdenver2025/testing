@@ -21,9 +21,18 @@ async function startServer() {
 
     // Routes
     app.use('/api/profile', profileRoutes);
-
+    
     // Health check
     app.get('/health', (_, res) => res.json({ status: 'OK' }));
+    
+    // Simple mock API routes for now
+    app.get('/api/events', (_, res) => {
+      res.json({ message: 'Events API is working' });
+    });
+    
+    app.get('/api/attestations', (_, res) => {
+      res.json({ message: 'Attestations API is working' });
+    });
 
     // Start the server
     app.listen(PORT, () => {

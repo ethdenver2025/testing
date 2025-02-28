@@ -1,5 +1,5 @@
 # AI Context: Formicary Project
-Last Updated: 2025-02-25
+Last Updated: 2025-02-26
 
 ## Project Intent & Vision
 Formicary is a decentralized labor coordination platform that revolutionizes workforce management through AI-driven matching and blockchain-based trust systems. The platform facilitates:
@@ -106,6 +106,22 @@ Formicary is a decentralized labor coordination platform that revolutionizes wor
   - AccountSettings: Fixed role toggle independence
   - CrewDashboard: Updated routing and layout
   - OrganizerDashboard: Updated routing and layout
+
+#### v0.1.2 - Ethereum Attestation Service Integration
+- Integrated Ethereum Attestation Service (EAS) for trust scoring
+- Implemented trust profile system with skill and work ethic attestations
+- Created crew directory with trust-based filtering
+- Developed crew matching system for production events
+- Added attestation creation and verification capabilities
+- Implemented trust score visualization and badges
+- Key components affected:
+  - CrewProfile: Added trust profile with attestation history
+  - CrewDirectory: Implemented trust-based filtering
+  - CreateEvent: Added trust-based crew matching
+  - TrustBadge: Created visual indicator for trust scores
+  - AppNavbar: Added navigation for trust-related features
+  - AttestationController: Backend endpoints for attestation operations
+  - EASService: Integration with Ethereum Attestation Service
 
 ## Development Guidelines
 

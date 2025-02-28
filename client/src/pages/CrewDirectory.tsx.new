@@ -1,0 +1,210 @@
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Container,
+  Heading,
+  SimpleGrid,
+  Input,
+  InputGroup,
+  InputLeftElement,
+  Select,
+  HStack,
+  VStack,
+  Text,
+  Button,
+  Flex,
+  Divider,
+  Avatar,
+  Badge,
+  Card,
+  CardBody,
+  Tag,
+  TagLabel,
+  TagLeftIcon,
+  useColorModeValue
+} from '@chakra-ui/react';
+import { SearchIcon, StarIcon } from '@chakra-ui/icons';
+
+// Mock data for crew members
+const mockCrew = [
+  {
+    id: '1',
+    name: 'Alex Johnson',
+    role: 'Sound Engineer',
+    location: 'Denver, CO',
+    rating: 4.8,
+    skills: ['Audio', 'Mixing', 'Live Events'],
+    avatar: 'https://randomuser.me/api/portraits/men/1.jpg',
+    endorsements: 12
+  },
+  {
+    id: '2',
+    name: 'Jamie Smith',
+    role: 'Lighting Designer',
+    location: 'Boulder, CO',
+    rating: 4.9,
+    skills: ['DMX', 'Programming', 'Design'],
+    avatar: 'https://randomuser.me/api/portraits/women/2.jpg',
+    endorsements: 15
+  },
+  {
+    id: '3',
+    name: 'Taylor Rodriguez',
+    role: 'Stage Manager',
+    location: 'Fort Collins, CO',
+    rating: 4.7,
+    skills: ['Coordination', 'Scheduling', 'Team Lead'],
+    avatar: 'https://randomuser.me/api/portraits/men/3.jpg',
+    endorsements: 9
+  },
+  {
+    id: '4',
+    name: 'Sam Wilson',
+    role: 'Video Engineer',
+    location: 'Colorado Springs, CO',
+    rating: 4.6,
+    skills: ['Camera Operation', 'Streaming', 'Editing'],
+    avatar: 'https://randomuser.me/api/portraits/women/4.jpg',
+    endorsements: 7
+  },
+  {
+    id: '5',
+    name: 'Jordan Lee',
+    role: 'Production Assistant',
+    location: 'Denver, CO',
+    rating: 4.5,
+    skills: ['Logistics', 'Support', 'Equipment Setup'],
+    avatar: 'https://randomuser.me/api/portraits/men/5.jpg',
+    endorsements: 5
+  },
+  {
+    id: '6',
+    name: 'Morgan King',
+    role: 'Front of House Engineer',
+    location: 'Boulder, CO',
+    rating: 4.9,
+    skills: ['Audio', 'Live Sound', 'Acoustics'],
+    avatar: 'https://randomuser.me/api/portraits/women/6.jpg',
+    endorsements: 18
+  }
+];
+
+export const CrewDirectory: React.FC = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterRole, setFilterRole] = useState('');
+  const navigate = useNavigate();
+  
+  const cardBg = useColorModeValue('white', 'gray.700');
+  const hoverBg = useColorModeValue('gray.50', 'gray.600');
+  
+  // Filter crew based on search query and role filter
+  const filteredCrew = mockCrew.filter(crew => {
+    const matchesSearch = crew.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      crew.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      crew.skills.some(skill => skill.toLowerCase().includes(searchQuery.toLowerCase()));
+      
+    const matchesRole = filterRole ? crew.role === filterRole : true;
+    
+    return matchesSearch && matchesRole;
+  });
+  
+  const handleViewProfile = (id: string) => {
+    navigate(`/crew/${id}`);
+  };
+  
+  return (
+    <Container maxW="container.xl" py={8}>
+      <Heading as="h1" size="xl" mb={8}>Crew Directory</Heading>
+      
+      {/* Search and Filter */}
+      <HStack spacing={4} mb={8} flexWrap="wrap">
+        <InputGroup size="md" maxW="500px" flex={1}>
+          <InputLeftElement pointerEvents="none">
+            <SearchIcon color="gray.400" />
+          </InputLeftElement>
+          <Input 
+            placeholder="Search by name, role, or skills..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </InputGroup>
+        
+        <Select 
+          placeholder="Filter by role" 
+          maxW="200px"
+          value={filterRole}
+          onChange={(e) => setFilterRole(e.target.value)}
+        >
+          <option value="Sound Engineer">Sound Engineer</option>
+          <option value="Lighting Designer">Lighting Designer</option>
+          <option value="Stage Manager">Stage Manager</option>
+          <option value="Video Engineer">Video Engineer</option>
+          <option value="Production Assistant">Production Assistant</option>
+          <option value="Front of House Engineer">Front of House Engineer</option>
+        </Select>
+      </HStack>
+      
+      {/* Results */}
+      <Text mb={4}>{filteredCrew.length} crew members found</Text>
+      <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} spacing={6}>
+        {filteredCrew.map(crew => (
+          <Card 
+            key={crew.id} 
+            bg={cardBg} 
+            _hover={{ bg: hoverBg }}
+            cursor="pointer"
+            onClick={() => handleViewProfile(crew.id)}
+            transition="all 0.2s"
+          >
+            <CardBody>
+              <HStack spacing={4} mb={4}>
+                <Avatar size="lg" src={crew.avatar} name={crew.name} />
+                <VStack align="start" spacing={1}>
+                  <Heading size="md">{crew.name}</Heading>
+                  <Text color="gray.500">{crew.role}</Text>
+                  <Text fontSize="sm">{crew.location}</Text>
+                </VStack>
+              </HStack>
+              
+              <Flex align="center" mb={3}>
+                <HStack>
+                  <StarIcon color="yellow.400" />
+                  <Text fontWeight="bold">{crew.rating}</Text>
+                </HStack>
+                <Badge ml={3} colorScheme="green">
+                  {crew.endorsements} endorsements
+                </Badge>
+              </Flex>
+              
+              <Divider my={3} />
+              
+              <Box>
+                <Text fontSize="sm" mb={2}>Skills:</Text>
+                <Flex wrap="wrap" gap={2}>
+                  {crew.skills.map(skill => (
+                    <Tag key={skill} size="sm" colorScheme="blue">
+                      <TagLabel>{skill}</TagLabel>
+                    </Tag>
+                  ))}
+                </Flex>
+              </Box>
+              
+              <Button 
+                mt={4} 
+                size="sm" 
+                colorScheme="teal" 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleViewProfile(crew.id);
+                }}
+              >
+                View Profile
+              </Button>
+            </CardBody>
+          </Card>
+        ))}
+      </SimpleGrid>
+    </Container>
+  );
+};

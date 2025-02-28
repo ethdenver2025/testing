@@ -2,6 +2,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const Dotenv = require('dotenv-webpack');
 const webpack = require('webpack');
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 
 module.exports = (env, argv) => {
   const isProduction = argv.mode === 'production';
@@ -31,7 +32,11 @@ module.exports = (env, argv) => {
         "http": require.resolve("stream-http"),
         "https": require.resolve("https-browserify"),
         "os": require.resolve("os-browserify/browser"),
-        "buffer": require.resolve("buffer/")
+        "buffer": require.resolve("buffer/"),
+        "process": require.resolve("process/browser"),
+        "util": require.resolve("util/"),
+        "path": require.resolve("path-browserify"),
+        "zlib": require.resolve("browserify-zlib")
       },
       alias: {
         '@': path.resolve(__dirname, 'src'),
@@ -74,6 +79,7 @@ module.exports = (env, argv) => {
         } : false,
       }),
       new Dotenv(),
+      new NodePolyfillPlugin(),
       new webpack.ProvidePlugin({
         Buffer: ['buffer', 'Buffer'],
         process: 'process/browser',

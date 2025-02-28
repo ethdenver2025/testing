@@ -1,200 +1,229 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from '@chakra-ui/react';
-import { useZkSyncAuth } from '../hooks/useZkSyncAuth';
-import { TokenResponse } from '@react-oauth/google';
 
+// Define types
 export type UserType = 'PRODUCTION_CREW' | 'EVENT_ORGANIZER';
+
+interface UserProfile {
+  bio: string;
+  skills: string[];
+}
 
 interface User {
   id: string;
-  address?: string;
+  name: string;
   username: string;
-  email?: string;
+  email: string;
+  walletAddress?: string;
   userTypes: UserType[];
   activeRole?: UserType;
+  profile?: UserProfile;
+  isProfileComplete?: boolean;
 }
 
 interface AuthContextType {
   user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  error: Error | null;
-  loginWithWallet: () => Promise<void>;
-  loginWithGoogle: (response: TokenResponse) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  updateProfile: (profile: { username: string; userTypes: UserType[] }) => Promise<void>;
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  loginWithWallet: () => Promise<void>;
+  loginWithGoogle: (token: string) => Promise<void>;
   switchRole: (role: UserType) => void;
   handleMockAuth: () => void;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+// Create context with default values
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  login: async () => {},
+  logout: () => {},
+  isLoading: false,
+  isAuthenticated: false,
+  loginWithWallet: async () => {},
+  loginWithGoogle: async () => {},
+  switchRole: () => {},
+  handleMockAuth: () => {},
+});
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+// Custom hook to use the auth context
+export const useAuth = () => useContext(AuthContext);
+
+// Provider component
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const [user, setUser] = useState<User | null>({
+    id: '1',
+    name: 'Demo User',
+    username: 'demo_user',
+    email: 'demo@example.com',
+    walletAddress: '0x1234...5678',
+    userTypes: ['PRODUCTION_CREW', 'EVENT_ORGANIZER'],
+    activeRole: 'PRODUCTION_CREW',
+    profile: {
+      bio: 'Experienced production crew member and event organizer',
+      skills: ['Audio', 'Lighting', 'Event Management']
+    },
+    isProfileComplete: true
+  });
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
   const navigate = useNavigate();
-  const toast = useToast();
-  const { connectWallet, handleDisconnect, isConnected, address } = useZkSyncAuth();
 
-  const loginWithWallet = useCallback(async () => {
+  // Calculate if authenticated
+  const isAuthenticated = !!user;
+
+  // Mock login function
+  const login = async (email: string, password: string) => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      setError(null);
-
-      const walletAddress = await connectWallet();
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      if (!walletAddress) {
-        throw new Error('Failed to connect wallet');
-      }
-
-      // Initialize user with wallet address
-      setUser({
-        id: '',
-        address: walletAddress,
-        username: '',
-        userTypes: []
-      });
-
-      // Redirect to profile setup if no username
-      navigate('/profile-setup');
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error('Failed to login');
-      setError(error);
-      toast({
-        title: 'Login Failed',
-        description: error.message,
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
-      throw error;
-    } finally {
-      setIsLoading(false);
-    }
-  }, [connectWallet, navigate, toast]);
-
-  const loginWithGoogle = useCallback(async (response: TokenResponse) => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      // TODO: Verify token with backend
-      // For now, just use the access token to get user info
-      const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-        headers: {
-          Authorization: `Bearer ${response.access_token}`,
+      // Mock user data
+      const userData: User = {
+        id: '1',
+        name: 'Demo User',
+        username: 'demo_user',
+        email: email,
+        userTypes: ['PRODUCTION_CREW', 'EVENT_ORGANIZER'],
+        activeRole: 'PRODUCTION_CREW',
+        profile: {
+          bio: 'Experienced production crew member and event organizer',
+          skills: ['Audio', 'Lighting', 'Event Management']
         },
-      });
-
-      if (!userInfoResponse.ok) {
-        throw new Error('Failed to get user info from Google');
-      }
-
-      const userInfo = await userInfoResponse.json();
-      console.log('Google user info:', userInfo); // Debug log
-
-      // Initialize user with Google info
-      setUser({
-        id: '',
-        username: userInfo.name || '',
-        email: userInfo.email,
-        userTypes: []
-      });
-
-      // Redirect to profile setup if no username
-      navigate('/profile-setup');
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error('Failed to get Google user info');
-      setError(error);
-      toast({
-        title: 'Login Failed',
-        description: error.message,
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
-      });
+        isProfileComplete: true
+      };
+      
+      setUser(userData);
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Login error:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [navigate, toast]);
+  };
 
+  // Logout function
   const logout = useCallback(() => {
-    handleDisconnect();
     setUser(null);
-    navigate('/');
-  }, [handleDisconnect, navigate]);
-
-  const updateProfile = useCallback(async (profile: { username: string; userTypes: UserType[] }) => {
-    if (!user) throw new Error('No user logged in');
-    
-    // Keep the current active role if it's still in userTypes, otherwise use the first role
-    const updatedUser = {
-      ...user,
-      username: profile.username,
-      userTypes: profile.userTypes,
-      activeRole: profile.userTypes.includes(user.activeRole || '') 
-        ? user.activeRole 
-        : profile.userTypes[0]
-    };
-    
-    setUser(updatedUser);
-
-    // Navigate to the appropriate dashboard based on active role
-    const dashboardPath = updatedUser.activeRole === 'PRODUCTION_CREW' ? '/crew-dashboard' : '/organizer-dashboard';
-    navigate(dashboardPath);
-  }, [user, navigate]);
-
-  const switchRole = useCallback((role: UserType) => {
-    if (!user) return;
-    if (!user.userTypes.includes(role)) return;
-
-    setUser(prev => prev ? { ...prev, activeRole: role } : null);
-
-    // Navigate to the appropriate dashboard
-    const dashboardPath = role === 'PRODUCTION_CREW' ? '/crew-dashboard' : '/organizer-dashboard';
-    navigate(dashboardPath);
-  }, [user, navigate]);
-
-  // Mock authentication for development purposes
-  const handleMockAuth = useCallback(() => {
-    const mockUser = {
-      id: 'user_001', // Simulate a user ID
-      username: 'JaneDoe',
-      email: 'jane@example.com',
-      userTypes: ['PRODUCTION_CREW', 'EVENT_ORGANIZER'] as UserType[],
-      address: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F'
-    };
-
-    localStorage.setItem('user', JSON.stringify(mockUser));
-    localStorage.setItem('token', 'mock_jwt_token');
-    setUser(mockUser);
-    navigate('/dashboard');
+    navigate('/login');
   }, [navigate]);
 
+  // Switch user role
+  const switchRole = useCallback((role: UserType) => {
+    if (user && user.userTypes.includes(role)) {
+      setUser(prev => prev ? { ...prev, activeRole: role } : null);
+      
+      // Navigate to appropriate dashboard
+      if (role === 'PRODUCTION_CREW') {
+        navigate('/crew-dashboard');
+      } else if (role === 'EVENT_ORGANIZER') {
+        navigate('/organizer-dashboard');
+      }
+    }
+  }, [user, navigate]);
+
+  // Mock wallet login
+  const loginWithWallet = async () => {
+    setIsLoading(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Mock user data
+      const userData: User = {
+        id: '1',
+        name: 'Wallet User',
+        username: 'wallet_user',
+        email: 'wallet@example.com',
+        walletAddress: '0x1234...5678',
+        userTypes: ['PRODUCTION_CREW'],
+        activeRole: 'PRODUCTION_CREW',
+        profile: {
+          bio: 'Crew member authenticated with wallet',
+          skills: ['Video', 'Sound']
+        },
+        isProfileComplete: true
+      };
+      
+      setUser(userData);
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Wallet login error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Mock Google login
+  const loginWithGoogle = async (token: string) => {
+    setIsLoading(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Mock user data
+      const userData: User = {
+        id: '2',
+        name: 'Google User',
+        username: 'google_user',
+        email: 'google@example.com',
+        userTypes: ['EVENT_ORGANIZER'],
+        activeRole: 'EVENT_ORGANIZER',
+        profile: {
+          bio: 'Event organizer authenticated with Google',
+          skills: ['Planning', 'Marketing']
+        },
+        isProfileComplete: true
+      };
+      
+      setUser(userData);
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Google login error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Mock auth for quick testing
+  const handleMockAuth = () => {
+    const mockUser: User = {
+      id: '3',
+      name: 'Mock User',
+      username: 'mock_user',
+      email: 'mock@example.com',
+      userTypes: ['PRODUCTION_CREW', 'EVENT_ORGANIZER'],
+      activeRole: 'PRODUCTION_CREW',
+      profile: {
+        bio: 'Mock user with both roles',
+        skills: ['Audio', 'Lighting', 'Event Management']
+      },
+      isProfileComplete: true
+    };
+    
+    setUser(mockUser);
+    navigate('/dashboard');
+  };
+
   return (
-    <AuthContext.Provider value={{
-      user,
-      isAuthenticated: !!user,
-      isLoading,
-      error,
-      loginWithWallet,
-      loginWithGoogle,
-      logout,
-      updateProfile,
-      switchRole,
-      handleMockAuth
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        login,
+        logout,
+        isLoading,
+        isAuthenticated,
+        loginWithWallet,
+        loginWithGoogle,
+        switchRole,
+        handleMockAuth
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+export default AuthContext;

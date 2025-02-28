@@ -1,44 +1,80 @@
 version: '3.8'
+
 services:
+  # Client service
   client:
     build:
       context: ./client
+      dockerfile: Dockerfile
     ports:
-      - "3001:3001"
-    volumes:
-      - ./client:/app
-      - /app/node_modules
+      - "80:80"
+    networks:
+      - formicary-network
     depends_on:
       - server
-    environment:
-      - NODE_ENV=development
+    restart: unless-stopped
 
+  # Server service
   server:
     build:
       context: ./server
+      dockerfile: Dockerfile
     ports:
-      - "4000:4000"
-    volumes:
-      - ./server:/app
-      - /app/node_modules
+      - "3000:3000"
+    networks:
+      - formicary-network
     depends_on:
       - postgres
+    restart: unless-stopped
     environment:
-      - NODE_ENV=development
-      - PORT=4000
-      - CLIENT_URL=http://localhost:3001
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/formicary
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD:-formicary_password}@postgres:5432/formicary
+      - JWT_SECRET=${JWT_SECRET:-default_jwt_secret_replace_in_production}
+      - ZKSYNC_SSO_CLIENT_ID=${ZKSYNC_SSO_CLIENT_ID}
+      - ZKSYNC_SSO_CLIENT_SECRET=${ZKSYNC_SSO_CLIENT_SECRET}
 
+  # PostgreSQL service
   postgres:
-    image: postgres:15
+    image: postgres:15-alpine
     ports:
       - "5432:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: formicary
+    networks:
+      - formicary-network
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./server/init.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-formicary_password}
+      POSTGRES_DB: formicary
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PgAdmin for database management (optional)
+  pgadmin:
+    image: dpage/pgadmin4
+    ports:
+      - "5050:80"
+    networks:
+      - formicary-network
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@formicary.app}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-formicary_admin}
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+networks:
+  formicary-network:
+    driver: bridge
 
 volumes:
   postgres_data:
+  pgadmin_data:

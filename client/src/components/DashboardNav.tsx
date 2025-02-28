@@ -42,27 +42,25 @@ export const DashboardNav = () => {
 
   return (
     <Box
-      bg="carbon.800"
+      bg="background.secondary"
       px={4}
       position="fixed"
       top={0}
       left={0}
       right={0}
-      borderBottom={1}
-      borderStyle="solid"
-      borderColor="carbon.700"
       zIndex={100}
+      h="64px"
     >
       <Flex h={16} alignItems="center" justifyContent="space-between">
         <HStack spacing={8} alignItems="center">
           <Text
-            fontSize="lg"
-            fontWeight="medium"
+            fontSize="xl"
+            fontWeight="bold"
             letterSpacing="wide"
             cursor="pointer"
             onClick={() => navigate(getDashboardPath())}
           >
-            Formicary
+            Formicary<Text as="span" color="accent.primary">.app</Text>
           </Text>
         </HStack>
 
@@ -75,15 +73,15 @@ export const DashboardNav = () => {
             <Avatar
               size="sm"
               name={user?.username}
-              bg="carbon.600"
-              color="whiteAlpha.900"
-              fontWeight="light"
+              bg="accent.secondary"
+              color="text.primary"
+              fontWeight="medium"
             >
               {user?.username ? getInitials(user.username) : ''}
             </Avatar>
           </MenuButton>
           <MenuList>
-            <Text px="3" py="2" fontSize="sm" color="whiteAlpha.700" fontWeight="light">
+            <Text px="3" py="2" fontSize="sm" color="text.secondary" fontWeight="normal">
               {user?.username}
             </Text>
             <MenuDivider />
@@ -91,7 +89,7 @@ export const DashboardNav = () => {
             <MenuItem
               icon={<FiSettings />}
               onClick={() => navigate('/account-settings')}
-              fontWeight="light"
+              fontWeight="normal"
             >
               Account Settings
             </MenuItem>
@@ -102,7 +100,7 @@ export const DashboardNav = () => {
                 <MenuItem
                   icon={user.activeRole === 'PRODUCTION_CREW' ? <FiUsers /> : <FiMonitor />}
                   onClick={() => switchRole(user.activeRole === 'PRODUCTION_CREW' ? 'EVENT_ORGANIZER' : 'PRODUCTION_CREW')}
-                  fontWeight="light"
+                  fontWeight="normal"
                 >
                   Switch to {user.activeRole === 'PRODUCTION_CREW' ? 'Event Organizer' : 'Production Crew'}
                 </MenuItem>
@@ -113,7 +111,7 @@ export const DashboardNav = () => {
             <MenuItem
               icon={<FiLogOut />}
               onClick={handleLogout}
-              fontWeight="light"
+              fontWeight="normal"
             >
               Logout
             </MenuItem>

@@ -28,6 +28,11 @@ model User {
   accountSettings    AccountSettings?
   profile            Profile?
   tasks              Task[]
+  createdEvents      Event[]   @relation("EventOrganizer")
+  crewAssignments    EventCrew[] @relation("CrewAssignments")
+  attestationsReceived Attestation[]   @relation("recipient")
+  attestationsGiven    Attestation[]   @relation("attester")
+  trustScore           Float?          // Calculated trust score based on attestations
 }
 
 model Profile {
@@ -77,6 +82,86 @@ model Task {
   updatedAt DateTime  @updatedAt
 }
 
+model Event {
+  id               String     @id @default(cuid())
+  title            String
+  description      String?
+  location         String
+  startDate        DateTime
+  endDate          DateTime
+  budget           Float?
+  status           String     @default("PENDING")
+  organizerId      String
+  organizer        User       @relation("EventOrganizer", fields: [organizerId], references: [id])
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  crewPositions    CrewPosition[]
+  crewAssignments  EventCrew[]
+  attestations     Attestation[]
+}
+
+model EventCrewPosition {
+  id          String    @id @default(uuid())
+  title       String
+  description String?
+  skills      String[]
+  payRate     Decimal   @db.Decimal(10, 2)
+  quantity    Int       @default(1)
+  filled      Int       @default(0)
+  eventId     String
+  event       Event     @relation(fields: [eventId], references: [id])
+  crew        EventCrew[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model EventCrew {
+  id              String    @id @default(uuid())
+  status          CrewStatus @default(APPLIED)
+  userId          String
+  user            User      @relation("CrewAssignments", fields: [userId], references: [id])
+  eventId         String
+  event           Event     @relation(fields: [eventId], references: [id])
+  positionId      String
+  position        EventCrewPosition @relation(fields: [positionId], references: [id])
+  applicationDate DateTime  @default(now())
+  hiredDate       DateTime?
+  rating          Decimal?  @db.Decimal(3, 1)
+  feedback        String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+// Attestation Models for EAS Integration
+model AttestationType {
+  id               String       @id @default(cuid())
+  name             String       @unique
+  description      String
+  schema           String       // JSON schema for this attestation type
+  onChainSchemaUID String?      // EAS schema UID once deployed
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  attestations     Attestation[]
+}
+
+model Attestation {
+  id               String         @id @default(cuid())
+  uid              String?        // EAS attestation UID once published on-chain
+  attestationType  AttestationType @relation(fields: [attestationTypeId], references: [id])
+  attestationTypeId String
+  attester         User           @relation("attester", fields: [attesterId], references: [id])
+  attesterId       String
+  recipient        User           @relation("recipient", fields: [recipientId], references: [id])
+  recipientId      String
+  data             String         // JSON data for the attestation
+  eventId          String?
+  event            Event?         @relation(fields: [eventId], references: [id])
+  transactionHash  String?        // Ethereum transaction hash once published
+  revoked          Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
 enum TaskType {
   Storage
   Processing
@@ -105,4 +190,20 @@ enum Privacy {
   PUBLIC
   PRIVATE
   FRIENDS_ONLY
+}
+
+enum EventStatus {
+  PLANNING
+  UPCOMING
+  ACTIVE
+  COMPLETED
+  CANCELED
+}
+
+enum CrewStatus {
+  APPLIED
+  SHORTLISTED
+  HIRED
+  REJECTED
+  COMPLETED
 }

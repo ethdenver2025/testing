@@ -1,64 +1,74 @@
-import React, { useState } from 'react';
-import { 
-  Box, 
-  Container, 
-  Heading, 
-  Text, 
-  SimpleGrid, 
-  Card, 
-  CardBody, 
-  Button, 
-  VStack, 
-  HStack, 
-  Badge, 
-  Input, 
-  InputGroup, 
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Button,
+  Container,
+  Flex,
+  Grid,
+  Heading,
+  HStack,
+  IconButton,
+  Input,
+  InputGroup,
   InputLeftElement,
   Menu,
   MenuButton,
-  MenuList,
   MenuItem,
-  IconButton,
-  Tabs, 
-  TabList, 
-  Tab, 
-  TabPanels, 
-  TabPanel,
-  Flex,
-  Progress,
+  MenuList,
+  SimpleGrid,
   Stat,
+  StatHelpText,
   StatLabel,
   StatNumber,
-  StatHelpText,
-  Divider,
-  Avatar,
-  AvatarGroup,
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+  Text,
+  useToast,
+  VStack,
+  Spinner,
+  Card,
+  CardBody,
+  Badge,
+  Progress,
+  Tag,
+  useColorModeValue,
+  useDisclosure,
   Modal,
   ModalOverlay,
   ModalContent,
   ModalHeader,
-  ModalBody,
   ModalFooter,
+  ModalBody,
   ModalCloseButton,
-  useDisclosure,
-  useColorModeValue,
-  Tag
+  Avatar,
+  Divider,
 } from '@chakra-ui/react';
-import { 
-  FiPlus, 
-  FiSearch, 
-  FiFilter, 
-  FiMapPin, 
-  FiCalendar, 
-  FiClock, 
-  FiUsers, 
+import {
+  FiCalendar,
+  FiClock,
   FiDollarSign,
-  FiMoreVertical,
+  FiDownload,
   FiEdit,
+  FiFilter,
+  FiMapPin,
+  FiMoreVertical,
+  FiPlus,
+  FiRefreshCw,
+  FiSearch,
+  FiSliders,
   FiTrash2,
+  FiUsers,
   FiClipboard,
-  FiChevronDown
+  FiAlertCircle,
+  FiChevronDown,
 } from 'react-icons/fi';
+import axios from 'axios';
+import CreateEventModal from './CreateEventModal';
+import ManageEventModal from './ManageEventModal';
 
 // Mock events data
 const mockEvents = [
@@ -118,20 +128,114 @@ const mockEvents = [
 
 // Mock crew members data
 const mockCrewMembers = [
-  { id: '1', name: 'Alex Johnson', role: 'Camera Operator', rating: 4.8 },
-  { id: '2', name: 'Sam Lee', role: 'Sound Engineer', rating: 4.9 },
-  { id: '3', name: 'Taylor Smith', role: 'Lighting Technician', rating: 4.7 },
-  { id: '4', name: 'Jordan Patel', role: 'Stage Manager', rating: 4.5 },
+  { id: '1', name: 'Jordan Smith', role: 'Camera Operator', rating: 4.8 },
+  { id: '2', name: 'Alex Johnson', role: 'Sound Engineer', rating: 4.9 },
+  { id: '3', name: 'Casey Williams', role: 'Lighting Technician', rating: 4.7 },
+  { id: '4', name: 'Taylor Brown', role: 'Stage Manager', rating: 4.6 },
+  { id: '5', name: 'Morgan Davis', role: 'Video Director', rating: 4.9 },
+  { id: '6', name: 'Riley Wilson', role: 'Production Assistant', rating: 4.5 },
+  { id: '7', name: 'Jamie Garcia', role: 'Audio Assistant', rating: 4.7 },
+  { id: '8', name: 'Avery Martinez', role: 'Camera Assistant', rating: 4.6 }
 ];
 
 export const Events = () => {
   const [events, setEvents] = useState(mockEvents);
   const [selectedEvent, setSelectedEvent] = useState<typeof mockEvents[0] | null>(null);
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [loading, setLoading] = useState(false);
+  const { isOpen, onOpen, onClose } = useDisclosure(); // For event details modal
+  const { 
+    isOpen: isCreateModalOpen, 
+    onOpen: onCreateModalOpen, 
+    onClose: onCreateModalClose 
+  } = useDisclosure(); // For create event modal
+  const {
+    isOpen: isManageEventModalOpen,
+    onOpen: onManageEventModalOpen,
+    onClose: onManageEventModalClose
+  } = useDisclosure(); // For manage event modal
+  const toast = useToast();
+  const [manageEventModalData, setManageEventModalData] = useState<typeof mockEvents[0] | null>(null);
+
+  // Fetch events on component mount
+  useEffect(() => {
+    const fetchEvents = async () => {
+      setLoading(true);
+      try {
+        // In a real app, you would fetch events from an API
+        // For now, we're using mock data
+        
+        // Filter events if myEventsOnly is true
+        // For demo purposes, we'll filter to just the first 2 events to simulate "My Events"
+        const filteredEvents = mockEvents;
+        
+        setEvents(filteredEvents);
+      } catch (error) {
+        console.error('Error fetching events:', error);
+        toast({
+          title: 'Error fetching events',
+          description: 'There was a problem loading your events.',
+          status: 'error',
+          duration: 5000,
+          isClosable: true,
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, [toast]);
+
+  // Handle creating a new event
+  const handleCreateEvent = async (eventData: any) => {
+    try {
+      setLoading(true);
+      // In a real app, you would make an API call to create the event
+      // For demo purposes, we'll just add it to the local state
+      
+      const newEvent = {
+        id: String(events.length + 1),
+        title: eventData.title,
+        location: eventData.location,
+        date: eventData.startDate + ' - ' + eventData.endDate,
+        crewNeeded: eventData.positions.length,
+        crewHired: 0,
+        status: 'Planning',
+        roles: eventData.positions.map((p: any) => p.title),
+        budget: eventData.budget,
+        applicants: 0,
+        daysLeft: 30
+      };
+      
+      // Add the new event to the events list
+      setEvents([newEvent, ...events]);
+      toast({
+        title: 'Event created successfully!',
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error('Error creating event:', error);
+      toast({
+        title: 'Error creating event',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const openEventDetails = (event: typeof mockEvents[0]) => {
     setSelectedEvent(event);
     onOpen();
+  };
+
+  const handleManageEvent = (event: typeof mockEvents[0]) => {
+    setManageEventModalData(event);
+    onManageEventModalOpen();
   };
 
   return (
@@ -140,7 +244,9 @@ export const Events = () => {
         <Flex justifyContent="space-between" alignItems="center" wrap="wrap">
           <Box>
             <Heading size="lg" mb={2}>Event Management</Heading>
-            <Text color="gray.500">Organize your events and manage production crews</Text>
+            <Text color="gray.500">
+              Organize your events and manage production crews
+            </Text>
           </Box>
           
           <HStack spacing={4} mt={{ base: 4, md: 0 }}>
@@ -151,7 +257,13 @@ export const Events = () => {
               <Input placeholder="Search events" />
             </InputGroup>
             
-            <Button leftIcon={<FiPlus />} colorScheme="green">
+            <Button 
+              leftIcon={<FiPlus />} 
+              colorScheme="green"
+              onClick={onCreateModalOpen}
+              minW="140px"
+              px={4}
+            >
               Create Event
             </Button>
           </HStack>
@@ -193,12 +305,12 @@ export const Events = () => {
           </Card>
         </SimpleGrid>
 
-        <Tabs variant="soft-rounded" colorScheme="green">
+        <Tabs variant="enclosed" colorScheme="gray">
           <TabList>
-            <Tab>All Events</Tab>
-            <Tab>Upcoming</Tab>
-            <Tab>Planning</Tab>
-            <Tab>Past</Tab>
+            <Tab borderRadius="base">All Events</Tab>
+            <Tab borderRadius="base">Upcoming</Tab>
+            <Tab borderRadius="base">Planning</Tab>
+            <Tab borderRadius="base">Past</Tab>
           </TabList>
           
           <TabPanels>
@@ -209,6 +321,7 @@ export const Events = () => {
                     key={event.id} 
                     event={event} 
                     onViewDetails={() => openEventDetails(event)}
+                    onManageEvent={() => handleManageEvent(event)}
                   />
                 ))}
               </SimpleGrid>
@@ -223,6 +336,7 @@ export const Events = () => {
                       key={event.id} 
                       event={event} 
                       onViewDetails={() => openEventDetails(event)}
+                      onManageEvent={() => handleManageEvent(event)}
                     />
                   ))
                 }
@@ -238,6 +352,7 @@ export const Events = () => {
                       key={event.id} 
                       event={event} 
                       onViewDetails={() => openEventDetails(event)}
+                      onManageEvent={() => handleManageEvent(event)}
                     />
                   ))
                 }
@@ -377,6 +492,20 @@ export const Events = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      {/* Create Event Modal */}
+      <CreateEventModal 
+        isOpen={isCreateModalOpen} 
+        onClose={onCreateModalClose} 
+        onEventCreated={handleCreateEvent} 
+      />
+
+      {/* Manage Event Modal */}
+      <ManageEventModal 
+        isOpen={isManageEventModalOpen} 
+        onClose={onManageEventModalClose} 
+        event={manageEventModalData} 
+      />
     </Container>
   );
 };
@@ -384,25 +513,14 @@ export const Events = () => {
 interface EventCardProps {
   event: typeof mockEvents[0];
   onViewDetails: () => void;
+  onManageEvent: () => void;
 }
 
-const EventCard = ({ event, onViewDetails }: EventCardProps) => {
-  const cardBg = useColorModeValue('white', 'gray.700');
-  const cardBorder = useColorModeValue('gray.200', 'gray.600');
+const EventCard = ({ event, onViewDetails, onManageEvent }: EventCardProps) => {
+  const navigate = useNavigate();
   
   return (
-    <Card 
-      border="1px" 
-      borderColor={cardBorder} 
-      bg={cardBg}
-      boxShadow="sm"
-      _hover={{ 
-        boxShadow: 'md',
-        transform: 'translateY(-2px)',
-        transition: 'all 0.2s ease-in-out'
-      }}
-      transition="all 0.2s ease-in-out"
-    >
+    <Card>
       <CardBody>
         <VStack align="stretch" spacing={4}>
           <HStack justifyContent="space-between">
@@ -417,7 +535,12 @@ const EventCard = ({ event, onViewDetails }: EventCardProps) => {
               />
               <MenuList>
                 <MenuItem icon={<FiEdit />}>Edit</MenuItem>
-                <MenuItem icon={<FiUsers />}>Manage Crew</MenuItem>
+                <MenuItem 
+                  icon={<FiUsers />} 
+                  onClick={onManageEvent}
+                >
+                  Manage Event
+                </MenuItem>
                 <MenuItem icon={<FiClipboard />}>Post Jobs</MenuItem>
                 <MenuItem icon={<FiTrash2 />} color="red.500">Cancel</MenuItem>
               </MenuList>
@@ -465,9 +588,15 @@ const EventCard = ({ event, onViewDetails }: EventCardProps) => {
               <Text fontSize="sm">{event.applicants} applicants</Text>
             </HStack>
           )}
-          
-          <Button onClick={onViewDetails} colorScheme="green" size="sm">
-            View Details
+          <Button 
+            onClick={onManageEvent} 
+            colorScheme="green" 
+            size="sm"
+            leftIcon={<FiUsers />}
+            mb={2}
+            borderRadius="base"
+          >
+            Manage Event
           </Button>
         </VStack>
       </CardBody>

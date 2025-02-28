@@ -1,55 +1,74 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ChakraProvider } from '@chakra-ui/react';
-import { WagmiProvider } from 'wagmi';
-import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
-import { GoogleOAuthProvider } from '@react-oauth/google';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Box, ChakraProvider } from '@chakra-ui/react';
+
+// Import pages
+import { CrewDirectory } from './pages/CrewDirectory';
+import { CrewProfile } from './pages/CrewProfile';
+import { CreateEvent } from './pages/CreateEvent';
+import { TrustedCrewRoster } from './pages/TrustedCrewRoster';
+import { OrganizerDashboard } from './pages/OrganizerDashboard';
+import { Dashboard } from './pages/Dashboard';
 import { Login } from './pages/Login';
 import { ProfileSetup } from './pages/ProfileSetup';
 import { CrewDashboard } from './pages/CrewDashboard';
-import { OrganizerDashboard } from './pages/OrganizerDashboard';
 import { AccountSettings } from './pages/AccountSettings';
-import { Profile } from './components/crew/Profile';
-import { Dashboard } from './pages/Dashboard';
-import { theme } from './theme';
-import { wagmiConfig } from './config/zkSyncAuth';
-import { AuthProvider } from './contexts/AuthContext';
 
-// Create a client for React Query
-const queryClient = new QueryClient();
-
-// Use environment variable for Google Client ID with a fallback for development
-const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '108617364308-977cu4qgir8f8i4qt4r189hl6i31e41l.apps.googleusercontent.com';
+// Import components
+import { AppLayout } from './components/common/AppLayout';
+import { useAuth } from './contexts/AuthContext';
 
 const App: React.FC = () => {
-  if (!GOOGLE_CLIENT_ID) {
-    console.error('Google Client ID is not set in environment variables');
-    return null;
-  }
-
+  const { user, isAuthenticated } = useAuth();
+  
   return (
-    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <WagmiProvider config={wagmiConfig}>
-        <QueryClientProvider client={queryClient}>
-          <ChakraProvider theme={theme}>
-            <Router>
-              <AuthProvider>
-                <Routes>
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/profile-setup" element={<ProfileSetup />} />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/crew-dashboard/*" element={<CrewDashboard />} />
-                  <Route path="/organizer-dashboard/*" element={<OrganizerDashboard />} />
-                  <Route path="/account-settings" element={<AccountSettings />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/" element={<Login />} />
-                </Routes>
-              </AuthProvider>
-            </Router>
-          </ChakraProvider>
-        </QueryClientProvider>
-      </WagmiProvider>
-    </GoogleOAuthProvider>
+    <Box>
+      <Routes>
+        <Route path="/login" element={!isAuthenticated ? <Login /> : <Navigate to="/dashboard" />} />
+        
+        <Route path="/profile-setup" element={
+          isAuthenticated ? <ProfileSetup /> : <Navigate to="/login" />
+        } />
+          
+        <Route path="/dashboard" element={
+          isAuthenticated ? <Dashboard /> : <Navigate to="/login" />
+        } />
+          
+        <Route path="/crew-dashboard/*" element={
+          isAuthenticated ? <CrewDashboard /> : <Navigate to="/login" />
+        } />
+          
+        <Route path="/organizer-dashboard/*" element={
+          isAuthenticated ? <OrganizerDashboard /> : <Navigate to="/login" />
+        } />
+          
+        <Route path="/account-settings" element={
+          isAuthenticated ? 
+          <AppLayout>
+            <AccountSettings />
+          </AppLayout> 
+          : <Navigate to="/login" />
+        } />
+        
+        <Route path="/crew/:id" element={
+          isAuthenticated ? 
+          <AppLayout>
+            <CrewProfile />
+          </AppLayout> 
+          : <Navigate to="/login" />
+        } />
+        
+        <Route path="/create-event" element={
+          isAuthenticated ? 
+          <AppLayout>
+            <CreateEvent />
+          </AppLayout> 
+          : <Navigate to="/login" />
+        } />
+
+        <Route path="/" element={<Navigate to="/dashboard" />} />
+      </Routes>
+    </Box>
   );
 };
 

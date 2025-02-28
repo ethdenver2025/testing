@@ -3,14 +3,14 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { Box, Flex } from '@chakra-ui/react';
 import { DashboardNav } from '../components/DashboardNav';
 import { Events } from '../components/organizer/Events';
-import CrewDirectory from './CrewDirectory';
-import TrustedCrewRoster from './TrustedCrewRoster';
+import { CrewDirectory } from './CrewDirectory';
+import { TrustedCrewRoster } from './TrustedCrewRoster';
 import { Messages } from '../components/organizer/Messages';
 import { Analytics } from '../components/organizer/Analytics';
 import { DashboardSidebar } from '../components/DashboardSidebar';
 import { Attestations } from '../components/organizer/Attestations';
 
-export const OrganizerDashboard = () => {
+const OrganizerDashboard = () => {
   return (
     <Flex direction="column" h="100vh" bg="background.primary">
       <DashboardNav />
@@ -36,3 +36,5 @@ export const OrganizerDashboard = () => {
     </Flex>
   );
 };
+
+export { OrganizerDashboard };
