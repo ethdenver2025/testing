@@ -1,10 +1,11 @@
 # Formicary App
 
-[![Build Status](https://img.shields.io/github/workflow/status/formicary/formicary-app/CI)](https://github.com/formicary/formicary-app/actions)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/github/package-json/v/formicary/formicary-app)](https://github.com/formicary/formicary-app)
-[![Last Commit](https://img.shields.io/github/last-commit/formicary/formicary-app)](https://github.com/formicary/formicary-app/commits/main)
-[![Code Quality](https://img.shields.io/codacy/grade/formicary-app)](https://www.codacy.com/gh/formicary/formicary-app)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/ethdenver2025/testing/build.yml?branch=main)](https://github.com/ethdenver2025/testing/actions)
+[![License](https://img.shields.io/github/license/ethdenver2025/testing)](https://github.com/ethdenver2025/testing/blob/main/LICENSE)
+[![Version](https://img.shields.io/github/package-json/v/ethdenver2025/testing)](https://github.com/ethdenver2025/testing)
+[![Last Commit](https://img.shields.io/github/last-commit/ethdenver2025/testing)](https://github.com/ethdenver2025/testing/commits/main)
+[![Issues](https://img.shields.io/github/issues/ethdenver2025/testing)](https://github.com/ethdenver2025/testing/issues)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/ethdenver2025/testing/pulls)
 
 ## Overview
 
