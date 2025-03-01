@@ -1,0 +1,183 @@
+/* Coinbase Button Styles */
+.coinbase-button {
+  background-color: #0052FF !important;
+  color: white !important;
+  border: none !important;
+  font-weight: 600 !important;
+  padding: 10px 20px !important;
+  border-radius: 4px !important;
+  font-size: 16px !important;
+  transition: background-color 0.3s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 44px !important;
+  cursor: pointer !important;
+}
+
+.coinbase-button:hover {
+  background-color: #003ec9 !important;
+}
+
+.coinbase-button:active {
+  transform: scale(0.98) !important;
+}
+
+.coinbase-button-large {
+  background-color: #0052FF !important;
+  color: white !important;
+  border: none !important;
+  font-weight: 600 !important;
+  padding: 16px 32px !important;
+  border-radius: 8px !important;
+  font-size: 18px !important;
+  transition: all 0.3s ease !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 56px !important;
+  width: 100% !important;
+  max-width: 320px !important;
+  cursor: pointer !important;
+  box-shadow: 0 4px 10px rgba(0, 82, 255, 0.2) !important;
+}
+
+.coinbase-button-large:hover {
+  background-color: #003ec9 !important;
+  box-shadow: 0 6px 12px rgba(0, 82, 255, 0.3) !important;
+  transform: translateY(-2px) !important;
+}
+
+.coinbase-button-large:active {
+  transform: translateY(0) !important;
+  box-shadow: 0 2px 6px rgba(0, 82, 255, 0.2) !important;
+}
+
+/* Modal Styles */
+.cb-modal {
+  backdrop-filter: blur(3px);
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.cb-modal-content {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* Override modal backgrounds for dark theme consistency */
+.cb-modal .chakra-modal__content {
+  background-color: var(--chakra-colors-gray-800) !important; 
+  color: var(--chakra-colors-gray-100) !important;
+}
+
+.cb-modal .chakra-modal__header,
+.cb-modal .chakra-modal__footer {
+  border-color: var(--chakra-colors-gray-700) !important;
+}
+
+.cb-modal .chakra-modal__body {
+  color: var(--chakra-colors-gray-200) !important;
+}
+
+.cb-modal .chakra-modal__close-btn {
+  color: var(--chakra-colors-gray-300) !important;
+}
+
+/* Input fields in dark theme */
+.cb-modal input {
+  background-color: var(--chakra-colors-gray-700) !important;
+  border-color: var(--chakra-colors-gray-600) !important;
+  color: var(--chakra-colors-gray-100) !important;
+}
+
+.cb-modal input:focus {
+  border-color: var(--chakra-colors-blue-300) !important;
+  box-shadow: 0 0 0 1px var(--chakra-colors-blue-300) !important;
+}
+
+/* Payment Status Badges */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-badge.pending {
+  background-color: #FFF8E6;
+  color: #B7791F;
+}
+
+.status-badge.success {
+  background-color: #F0FFF4;
+  color: #2F855A;
+}
+
+.status-badge.failed {
+  background-color: #FFF5F5;
+  color: #C53030;
+}
+
+/* Wallet Address */
+.wallet-address {
+  font-family: monospace;
+  background-color: #EDF2F7;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* Form Styling */
+.amount-input {
+  font-size: 18px !important;
+  height: 48px !important;
+  text-align: center !important;
+}
+
+.amount-input:focus {
+  border-color: #0052FF !important;
+  box-shadow: 0 0 0 1px #0052FF !important;
+}
+
+/* Payment Method Card */
+.payment-method-card {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.payment-method-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.payment-method-card.selected {
+  border-color: #0052FF;
+  border-width: 2px;
+}
+
+/* Payment Steps */
+.payment-step {
+  position: relative;
+  padding-bottom: 20px;
+}
+
+.payment-step::after {
+  content: '';
+  position: absolute;
+  left: 12px;
+  top: 24px;
+  bottom: 0;
+  width: 2px;
+  background-color: #E2E8F0;
+}
+
+.payment-step.active::after {
+  background-color: #0052FF;
+}
+
+.payment-step.completed::after {
+  background-color: #48BB78;
+}

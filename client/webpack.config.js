@@ -28,15 +28,16 @@ module.exports = (env, argv) => {
       extensions: ['.tsx', '.ts', '.js', '.jsx'],
       fallback: {
         "stream": require.resolve("stream-browserify"),
-        "crypto": require.resolve("crypto-browserify"),
+        "crypto": false,
         "http": require.resolve("stream-http"),
         "https": require.resolve("https-browserify"),
-        "os": require.resolve("os-browserify/browser"),
+        "os": false,
         "buffer": require.resolve("buffer/"),
         "process": require.resolve("process/browser"),
         "util": require.resolve("util/"),
         "path": require.resolve("path-browserify"),
-        "zlib": require.resolve("browserify-zlib")
+        "zlib": require.resolve("browserify-zlib"),
+        "fs": false
       },
       alias: {
         '@': path.resolve(__dirname, 'src'),

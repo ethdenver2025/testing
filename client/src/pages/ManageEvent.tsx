@@ -80,6 +80,7 @@ import {
   FiUnlock
 } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
+import CoinbasePayment from '../components/payments/CoinbasePayment';
 import eventManagementService from '../services/eventManagementService';
 
 // Component for managing a single event
@@ -139,22 +140,92 @@ const ManageEvent: React.FC = () => {
   // Fetch event details
   useEffect(() => {
     const fetchEventDetails = async () => {
-      if (!eventId) return;
-      
       try {
         setLoading(true);
-        const eventData = await eventManagementService.getEventDetails(eventId);
-        setEvent(eventData);
-        setError(null);
-      } catch (err) {
-        console.error('Error fetching event details:', err);
-        setError('Failed to load event details. Please try again later.');
-      } finally {
+        // In a real app, we would call the API to get event details
+        // const response = await eventManagementService.getEventDetails(eventId);
+        // For demo purposes, we'll use some dummy data
+        const mockEvent = {
+          id: eventId,
+          name: "Music Festival 2025",
+          description: "A 3-day music festival featuring top artists",
+          location: "Central Park, New York, NY",
+          startDate: "2025-06-15T10:00:00",
+          endDate: "2025-06-18T22:00:00",
+          organizer: {
+            id: "org123",
+            name: "Event Productions Inc.",
+            logo: "https://via.placeholder.com/100"
+          },
+          status: "scheduled", // scheduled, in-progress, completed, cancelled
+          escrow: {
+            contractAddress: "0x1234567890abcdef1234567890abcdef12345678",
+            funded: 35000,
+            released: 5000
+          },
+          budget: 75000,
+          positions: [
+            {
+              id: "pos1",
+              title: "Sound Engineer",
+              description: "Manage sound equipment and audio quality",
+              payRate: 350,
+              requiredSkills: ["Audio Engineering", "Live Sound", "Acoustics"],
+              assignedCrew: [
+                {
+                  id: "crew1",
+                  name: "John Smith",
+                  avatar: "https://bit.ly/dan-abramov",
+                  skills: ["Audio Engineering", "Live Sound", "Acoustics"]
+                }
+              ]
+            },
+            {
+              id: "pos2",
+              title: "Lighting Technician",
+              description: "Manage lighting equipment and visual effects",
+              payRate: 300,
+              requiredSkills: ["Lighting Design", "DMX", "Visual Effects"],
+              assignedCrew: [
+                {
+                  id: "crew2",
+                  name: "Jane Doe",
+                  avatar: "https://bit.ly/sage-adebayo",
+                  skills: ["Lighting Design", "DMX", "Visual Effects"]
+                }
+              ]
+            }
+          ],
+          callTimes: [
+            {
+              id: "call1",
+              date: "2025-06-14T08:00:00",
+              location: "Main Stage",
+              description: "Setup and sound check",
+              departments: ["Audio", "Lighting", "Video"]
+            },
+            {
+              id: "call2",
+              date: "2025-06-15T07:00:00",
+              location: "Entrance Gate",
+              description: "Prepare for doors open",
+              departments: ["Security", "Ticketing"]
+            }
+          ]
+        };
+        
+        setEvent(mockEvent);
         setLoading(false);
+      } catch (err) {
+        setError("Failed to fetch event details. Please try again later.");
+        setLoading(false);
+        console.error(err);
       }
     };
-    
-    fetchEventDetails();
+
+    if (eventId) {
+      fetchEventDetails();
+    }
   }, [eventId]);
 
   // Render loading state
@@ -291,7 +362,7 @@ const ManageEvent: React.FC = () => {
         <Flex justify="space-between" align="flex-start" wrap="wrap">
           <Box>
             <HStack spacing={4} mb={2}>
-              <Heading as="h1" size="xl">{event.title}</Heading>
+              <Heading as="h1" size="xl">{event.name}</Heading>
               <Badge colorScheme={getStatusColor(event.status)} fontSize="md" px={2} py={1}>
                 {event.status.replace('_', ' ').toUpperCase()}
               </Badge>
@@ -724,92 +795,116 @@ const ManageEvent: React.FC = () => {
                     colorScheme="green"
                     size="sm"
                     borderRadius="full"
+                    mb={4}
                   />
                   
-                  <HStack spacing={4}>
-                    <Button 
-                      leftIcon={<FiDollarSign />} 
-                      colorScheme="green" 
-                      onClick={onFundEscrowModalOpen}
-                      isDisabled={event.status === 'cancelled' || event.escrow.funded >= event.budget}
-                    >
-                      Fund Escrow
-                    </Button>
-                    
-                    <Button 
-                      leftIcon={<FiUnlock />} 
-                      colorScheme="blue"
-                      onClick={onReleaseEscrowModalOpen}
-                      isDisabled={
-                        event.status === 'cancelled' || 
-                        event.escrow.funded <= 0 || 
-                        event.escrow.funded <= event.escrow.released
-                      }
-                    >
-                      Release Funds
-                    </Button>
-                  </HStack>
+                  {/* Coinbase Payment Component */}
+                  <CoinbasePayment 
+                    eventId={eventId || ''}
+                    escrow={event.escrow}
+                    budget={event.budget}
+                    onFundSuccess={(amount) => {
+                      // In a real implementation, we would refresh the event data
+                      // For now, we'll just update the state directly
+                      setEvent({
+                        ...event,
+                        escrow: {
+                          ...event.escrow,
+                          funded: event.escrow.funded + amount
+                        }
+                      });
+                      
+                      toast({
+                        title: "Funding successful",
+                        description: `Successfully added $${amount.toLocaleString()} to escrow`,
+                        status: "success",
+                        duration: 5000,
+                        isClosable: true,
+                      });
+                    }}
+                  />
                 </VStack>
               </Box>
               
-              <Box borderWidth="1px" borderRadius="lg" p={5} shadow="sm" mt={4}>
-                <VStack align="stretch" spacing={4}>
-                  <Heading size="sm">Crew Payments</Heading>
-                  
-                  <Table variant="simple">
-                    <Thead>
-                      <Tr>
-                        <Th>Crew Member</Th>
-                        <Th>Position</Th>
-                        <Th isNumeric>Pay Rate</Th>
-                        <Th isNumeric>Days</Th>
-                        <Th isNumeric>Total</Th>
-                        <Th>Status</Th>
-                      </Tr>
-                    </Thead>
-                    <Tbody>
-                      {event.positions.flatMap((position: any) =>
-                        position.assignedCrew.map((crew: any, index: number) => {
-                          // Calculate payment info
-                          const start = new Date(event.startDate);
-                          const end = new Date(event.endDate);
-                          const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) || 1;
-                          const total = position.payRate * days;
-                          // For demo purposes, assume first crew member is paid
-                          const isPaid = index === 0;
-                          
-                          return (
-                            <Tr key={`${position.id}-${crew.id}`}>
-                              <Td>
-                                <HStack>
-                                  <Avatar size="sm" name={crew.name} src={crew.avatar} />
-                                  <Text>{crew.name}</Text>
-                                </HStack>
-                              </Td>
-                              <Td>{position.title}</Td>
-                              <Td isNumeric>${position.payRate}/day</Td>
-                              <Td isNumeric>{days}</Td>
-                              <Td isNumeric>${total}</Td>
-                              <Td>
-                                <Badge
-                                  colorScheme={isPaid ? "green" : "yellow"}
-                                >
-                                  {isPaid ? "Paid" : "Pending"}
-                                </Badge>
-                              </Td>
-                            </Tr>
-                          );
-                        })
-                      )}
-                    </Tbody>
-                  </Table>
-                </VStack>
-              </Box>
+              {/* Crew Payment Section */}
+              {event.positions.some((position: any) => position.assignedCrew.length > 0) && (
+                <Box borderWidth="1px" borderRadius="lg" p={5} shadow="sm" mt={4}>
+                  <VStack align="stretch" spacing={4}>
+                    <Heading size="sm">Crew Payments</Heading>
+                    
+                    <Table variant="simple">
+                      <Thead>
+                        <Tr>
+                          <Th>Crew Member</Th>
+                          <Th>Position</Th>
+                          <Th isNumeric>Pay Rate</Th>
+                          <Th isNumeric>Days</Th>
+                          <Th isNumeric>Total</Th>
+                          <Th>Status</Th>
+                        </Tr>
+                      </Thead>
+                      <Tbody>
+                        {event.positions.flatMap((position: any) =>
+                          position.assignedCrew.map((crew: any, index: number) => {
+                            // Calculate payment info
+                            const start = new Date(event.startDate);
+                            const end = new Date(event.endDate);
+                            const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) || 1;
+                            const total = position.payRate * days;
+                            // For demo purposes, assume first crew member is paid
+                            const isPaid = index === 0;
+                            
+                            return (
+                              <Tr key={`${position.id}-${crew.id}`}>
+                                <Td>
+                                  <HStack>
+                                    <Avatar size="sm" name={crew.name} src={crew.avatar} />
+                                    <Text>{crew.name}</Text>
+                                  </HStack>
+                                </Td>
+                                <Td>{position.title}</Td>
+                                <Td isNumeric>${position.payRate}/day</Td>
+                                <Td isNumeric>{days}</Td>
+                                <Td isNumeric>${total}</Td>
+                                <Td>
+                                  <Badge
+                                    colorScheme={isPaid ? "green" : "yellow"}
+                                  >
+                                    {isPaid ? "Paid" : "Pending"}
+                                  </Badge>
+                                </Td>
+                              </Tr>
+                            );
+                          })
+                        )}
+                      </Tbody>
+                    </Table>
+                    
+                    {/* Add a button to release funds to crew */}
+                    <Box display="flex" justifyContent="flex-end" mt={2}>
+                      <Button 
+                        leftIcon={<FiUnlock />} 
+                        colorScheme="blue"
+                        onClick={onReleaseEscrowModalOpen}
+                        isDisabled={
+                          event.status === 'cancelled' || 
+                          event.escrow.funded <= 0 || 
+                          event.escrow.funded <= event.escrow.released
+                        }
+                        size="md"
+                      >
+                        Release Funds to Crew
+                      </Button>
+                    </Box>
+                  </VStack>
+                </Box>
+              )}
+              
             </VStack>
           </TabPanel>
         </TabPanels>
       </Tabs>
-
+      
       {/* Modals will be added here in the next steps */}
       
       {/* Cancel Event Modal */}

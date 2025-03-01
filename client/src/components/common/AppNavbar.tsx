@@ -373,6 +373,10 @@ interface NavItem {
 }
 
 const NAV_ITEMS: Array<NavItem> = [
+  {
+    label: 'Home',
+    href: '/',
+  },
   // Dashboard, Crew, Events, and Attestations links have been removed from the header as requested
 ];
 
