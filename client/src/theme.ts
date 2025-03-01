@@ -279,12 +279,12 @@ const theme = extendTheme({
         py: 1,
       },
       variants: {
-        solid: props => ({
+        solid: (props: any) => ({
           bg: props.colorScheme 
             ? `${props.colorScheme}.500` 
             : colors.accent.primary,
         }),
-        subtle: props => ({
+        subtle: (props: any) => ({
           bg: props.colorScheme 
             ? `${props.colorScheme}.100` 
             : `${colors.accent.primary}15`,

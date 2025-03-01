@@ -79,13 +79,13 @@ import {
   FiLock,
   FiUnlock
 } from 'react-icons/fi';
-import { useAuth } from '../contexts/AuthContext';
 import CoinbasePayment from '../components/payments/CoinbasePayment';
+import { useAuth } from '../contexts/AuthContext';
 import eventManagementService from '../services/eventManagementService';
 
 // Component for managing a single event
 const ManageEvent: React.FC = () => {
-  const { eventId } = useParams<{ eventId: string }>();
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const toast = useToast();
   const { user } = useAuth();
@@ -146,7 +146,7 @@ const ManageEvent: React.FC = () => {
         // const response = await eventManagementService.getEventDetails(eventId);
         // For demo purposes, we'll use some dummy data
         const mockEvent = {
-          id: eventId,
+          id: id,
           name: "Music Festival 2025",
           description: "A 3-day music festival featuring top artists",
           location: "Central Park, New York, NY",
@@ -223,10 +223,10 @@ const ManageEvent: React.FC = () => {
       }
     };
 
-    if (eventId) {
+    if (id) {
       fetchEventDetails();
     }
-  }, [eventId]);
+  }, [id]);
 
   // Render loading state
   if (loading) {
@@ -303,13 +303,13 @@ const ManageEvent: React.FC = () => {
 
   // Handle event cancellation
   const handleCancelEvent = async () => {
-    if (!eventId || !cancelReason.trim()) return;
+    if (!id || !cancelReason.trim()) return;
     
     try {
       setCancelling(true);
       
       await eventManagementService.cancelEvent(
-        eventId,
+        id,
         cancelReason
       );
       
@@ -397,7 +397,7 @@ const ManageEvent: React.FC = () => {
                   leftIcon={<FiEdit />} 
                   colorScheme="blue" 
                   variant="outline"
-                  onClick={() => navigate(`/edit-event/${eventId}`)}
+                  onClick={() => navigate(`/edit-event/${id}`)}
                 >
                   Edit Details
                 </Button>
@@ -417,492 +417,528 @@ const ManageEvent: React.FC = () => {
       </Box>
 
       {/* Main content tabs */}
-      <Tabs variant="enclosed" colorScheme="blue">
-        <TabList>
+      <Tabs variant="enclosed" colorScheme="blue" mt={8}>
+        <TabList mb={4}>
           <Tab>Overview</Tab>
           <Tab>Crew</Tab>
           <Tab>Call Times</Tab>
           <Tab>Payments</Tab>
+          <Tab>Settings</Tab>
         </TabList>
-
-        <TabPanels>
-          {/* Overview Panel */}
-          <TabPanel>
-            <Box
-              bg={bgColor}
-              p={6}
-              borderRadius="lg"
-              boxShadow="md"
-              borderWidth="1px"
-              borderColor={borderColor}
-            >
-              <Heading as="h3" size="md" mb={4}>
-                Event Overview
-              </Heading>
-              
-              <Divider mb={6} />
-              
-              <VStack align="stretch" spacing={6}>
-                <Box>
-                  <Heading as="h4" size="sm" mb={2}>
-                    Description
-                  </Heading>
-                  <Text>{event.description}</Text>
-                </Box>
-                
-                <Box>
-                  <Heading as="h4" size="sm" mb={2}>
-                    Event Timeline
-                  </Heading>
-                  <HStack spacing={4}>
-                    <Box p={4} borderWidth="1px" borderRadius="md" flex="1">
-                      <Text fontWeight="bold" color="gray.500" fontSize="sm">START DATE</Text>
-                      <Text fontSize="md">{formatDate(event.startDate)}</Text>
-                    </Box>
-                    <Box p={4} borderWidth="1px" borderRadius="md" flex="1">
-                      <Text fontWeight="bold" color="gray.500" fontSize="sm">END DATE</Text>
-                      <Text fontSize="md">{formatDate(event.endDate)}</Text>
-                    </Box>
-                  </HStack>
-                </Box>
-                
-                <Box>
-                  <Heading as="h4" size="sm" mb={2}>
-                    Location Details
-                  </Heading>
-                  <Text>{event.location}</Text>
-                </Box>
-                
-                <Box>
-                  <Heading as="h4" size="sm" mb={2}>
-                    Budget Information
-                  </Heading>
-                  <HStack spacing={4}>
-                    <Box p={4} borderWidth="1px" borderRadius="md" flex="1">
-                      <Text fontWeight="bold" color="gray.500" fontSize="sm">TOTAL BUDGET</Text>
-                      <Text fontSize="xl" fontWeight="bold">${event.budget.toLocaleString()}</Text>
-                    </Box>
-                    <Box p={4} borderWidth="1px" borderRadius="md" flex="1">
-                      <Text fontWeight="bold" color="gray.500" fontSize="sm">ESCROW FUNDED</Text>
-                      <Text fontSize="xl" fontWeight="bold" color={event.escrow.funded === event.budget ? 'green.500' : 'orange.500'}>
-                        ${event.escrow.funded.toLocaleString()} 
-                        <Text as="span" fontSize="md" fontWeight="normal" color="gray.500">
-                          / ${event.budget.toLocaleString()}
-                        </Text>
-                      </Text>
-                    </Box>
-                    <Box p={4} borderWidth="1px" borderRadius="md" flex="1">
-                      <Text fontWeight="bold" color="gray.500" fontSize="sm">RELEASED TO CREW</Text>
-                      <Text fontSize="xl" fontWeight="bold" color="blue.500">
-                        ${event.escrow.released.toLocaleString()}
-                      </Text>
-                    </Box>
-                  </HStack>
-                </Box>
-              </VStack>
-            </Box>
-          </TabPanel>
-
-          {/* Crew Panel */}
-          <TabPanel>
-            <Box
-              bg={bgColor}
-              p={6}
-              borderRadius="lg"
-              boxShadow="md"
-              borderWidth="1px"
-              borderColor={borderColor}
-            >
-              <Flex justify="space-between" align="center" mb={4}>
-                <Heading as="h3" size="md">
-                  Crew Positions
+        
+        {!loading && event ? (
+          <TabPanels>
+            {/* Overview Panel */}
+            <TabPanel>
+              <Box
+                bg={bgColor}
+                p={6}
+                borderRadius="lg"
+                boxShadow="md"
+                borderWidth="1px"
+                borderColor={borderColor}
+              >
+                <Heading as="h3" size="md" mb={4}>
+                  Event Overview
                 </Heading>
                 
-                <Button 
-                  leftIcon={<FiUsers />} 
-                  colorScheme="blue" 
-                  size="sm"
-                  onClick={() => navigate('/crew-directory')}
-                >
-                  Find Crew
-                </Button>
-              </Flex>
-              
-              <Divider mb={6} />
-              
-              <Accordion allowToggle defaultIndex={[0]}>
-                {event.positions.map((position: any, index: number) => (
-                  <AccordionItem key={position.id} mb={4}>
-                    <h2>
-                      <AccordionButton py={4}>
-                        <Box flex="1" textAlign="left">
-                          <Flex align="center">
-                            <Text fontWeight="bold">{position.title}</Text>
-                            <Badge 
-                              ml={2} 
-                              colorScheme={position.isRequired ? "red" : "gray"}
-                              fontSize="xs"
-                            >
-                              {position.isRequired ? "REQUIRED" : "OPTIONAL"}
-                            </Badge>
-                            <Badge 
-                              ml={2} 
-                              colorScheme="blue"
-                              fontSize="xs"
-                            >
-                              {position.assignedCrew.length} / {position.quantity} FILLED
-                            </Badge>
-                          </Flex>
-                        </Box>
-                        <AccordionIcon />
-                      </AccordionButton>
-                    </h2>
-                    <AccordionPanel pb={4}>
-                      <VStack align="stretch" spacing={4}>
-                        <Box>
-                          <Text fontWeight="bold" mb={1}>Description:</Text>
-                          <Text>{position.description}</Text>
-                        </Box>
-                        
-                        <Box>
-                          <Text fontWeight="bold" mb={1}>Pay Rate:</Text>
-                          <Text>${position.payRate}/day</Text>
-                        </Box>
-                        
-                        <Box>
-                          <Text fontWeight="bold" mb={1}>Required Skills:</Text>
-                          <Flex wrap="wrap" gap={2}>
-                            {position.skills.map((skill: string) => (
-                              <Badge key={skill} colorScheme="teal" px={2} py={1}>
-                                {skill}
-                              </Badge>
-                            ))}
-                          </Flex>
-                        </Box>
-                        
-                        <Divider />
-                        
-                        <Box>
-                          <Flex justify="space-between" align="center" mb={2}>
-                            <Text fontWeight="bold">Assigned Crew:</Text>
-                            <Button
-                              size="xs"
-                              leftIcon={<FiPlus />}
-                              colorScheme="green"
-                              variant="outline"
-                              isDisabled={position.assignedCrew.length >= position.quantity || event.status === 'cancelled'}
-                              onClick={() => navigate(`/crew-directory?positionId=${position.id}&eventId=${eventId}`)}
-                            >
-                              Add Crew
-                            </Button>
-                          </Flex>
-                          
-                          {position.assignedCrew.length > 0 ? (
-                            <Table size="sm" variant="simple">
-                              <Thead>
-                                <Tr>
-                                  <Th>Name</Th>
-                                  <Th>Trust Score</Th>
-                                  <Th>Skills</Th>
-                                  <Th isNumeric>Actions</Th>
-                                </Tr>
-                              </Thead>
-                              <Tbody>
-                                {position.assignedCrew.map((crew: any) => (
-                                  <Tr key={crew.id}>
-                                    <Td fontWeight="medium">{crew.name}</Td>
-                                    <Td>
-                                      <Badge colorScheme={crew.trustScore > 80 ? "green" : crew.trustScore > 60 ? "yellow" : "orange"}>
-                                        {crew.trustScore}
-                                      </Badge>
-                                    </Td>
-                                    <Td>
-                                      <Flex wrap="wrap" gap={1}>
-                                        {crew.skills.slice(0, 2).map((skill: string) => (
-                                          <Badge key={skill} colorScheme="blue" variant="outline" fontSize="xs">
-                                            {skill}
-                                          </Badge>
-                                        ))}
-                                        {crew.skills.length > 2 && (
-                                          <Tooltip label={crew.skills.slice(2).join(", ")}>
-                                            <Badge colorScheme="gray" fontSize="xs">+{crew.skills.length - 2}</Badge>
-                                          </Tooltip>
-                                        )}
-                                      </Flex>
-                                    </Td>
-                                    <Td isNumeric>
-                                      <Button
-                                        size="xs"
-                                        colorScheme="red"
-                                        variant="ghost"
-                                        leftIcon={<FiX />}
-                                        isDisabled={event.status === 'cancelled'}
-                                        onClick={() => {
-                                          setSelectedCrewForRemoval(crew);
-                                          setSelectedPositionForRemoval(position);
-                                          onRemoveCrewModalOpen();
-                                        }}
-                                      >
-                                        Remove
-                                      </Button>
-                                    </Td>
-                                  </Tr>
-                                ))}
-                              </Tbody>
-                            </Table>
-                          ) : (
-                            <Alert status="info" size="sm">
-                              <AlertIcon />
-                              <Text fontSize="sm">No crew members assigned to this position yet.</Text>
-                            </Alert>
-                          )}
-                        </Box>
-                      </VStack>
-                    </AccordionPanel>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </Box>
-          </TabPanel>
-
-          {/* Call Times Panel */}
-          <TabPanel>
-            <VStack align="stretch" spacing={4}>
-              <Flex justify="space-between" align="center">
-                <Heading size="md">Call Times</Heading>
-                <Button 
-                  leftIcon={<FiPlus />} 
-                  colorScheme="green" 
-                  size="sm"
-                  onClick={() => {
-                    setSelectedCallTime(null);
-                    onEditCallTimeModalOpen();
-                  }}
-                >
-                  Add Call Time
-                </Button>
-              </Flex>
-              
-              <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
-                {event.callTimes.map((callTime: any) => (
-                  <Box 
-                    key={callTime.id} 
-                    borderWidth="1px" 
-                    borderRadius="lg" 
-                    p={4}
-                    shadow="sm"
-                  >
-                    <VStack align="stretch" spacing={3}>
-                      <Flex justify="space-between">
-                        <Text fontWeight="bold">
-                          {new Date(callTime.date).toLocaleDateString('en-US', {
-                            month: 'short',
-                            day: 'numeric',
-                            year: 'numeric'
-                          })}
-                        </Text>
-                        <HStack>
-                          <IconButton
-                            aria-label="Edit call time"
-                            icon={<FiEdit />}
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => {
-                              setSelectedCallTime(callTime);
-                              onEditCallTimeModalOpen();
-                            }}
-                          />
-                          <IconButton
-                            aria-label="Delete call time"
-                            icon={<FiTrash2 />}
-                            size="sm"
-                            variant="ghost"
-                            colorScheme="red"
-                          />
-                        </HStack>
-                      </Flex>
-                      
-                      <Text fontWeight="bold">
-                        {new Date(callTime.date).toLocaleTimeString('en-US', {
-                          hour: 'numeric',
-                          minute: 'numeric',
-                          hour12: true
-                        })}
-                      </Text>
-                      
-                      <HStack>
-                        <FiMapPin />
-                        <Text>{callTime.location}</Text>
-                      </HStack>
-                      
-                      <Text fontSize="sm" color="gray.600">
-                        {callTime.description}
-                      </Text>
-                      
-                      <Flex gap={2} wrap="wrap">
-                        {callTime.departments.map((dept: string) => (
-                          <Tag 
-                            key={dept} 
-                            size="sm" 
-                            colorScheme="purple" 
-                            mt={1}
-                          >
-                            {dept}
-                          </Tag>
-                        ))}
-                      </Flex>
-                    </VStack>
+                <Divider mb={6} />
+                
+                <VStack align="stretch" spacing={6}>
+                  <Box>
+                    <Heading as="h4" size="sm" mb={2}>
+                      Description
+                    </Heading>
+                    <Text>{event.description}</Text>
                   </Box>
-                ))}
-              </SimpleGrid>
-            </VStack>
-          </TabPanel>
-
-          {/* Payments Panel */}
-          <TabPanel>
-            <VStack align="stretch" spacing={4}>
-              <Heading size="md">Payments & Escrow</Heading>
-              
-              <Box borderWidth="1px" borderRadius="lg" p={5} shadow="sm">
-                <VStack align="stretch" spacing={4}>
-                  <Heading size="sm">Escrow Status</Heading>
                   
-                  <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
-                    <Stat>
-                      <StatLabel>Total Budget</StatLabel>
-                      <StatNumber>${event.budget.toLocaleString()}</StatNumber>
-                    </Stat>
-                    
-                    <Stat>
-                      <StatLabel>Funded</StatLabel>
-                      <StatNumber>${event.escrow.funded.toLocaleString()}</StatNumber>
-                      <StatHelpText>
-                        {Math.round((event.escrow.funded / event.budget) * 100)}% of budget
-                      </StatHelpText>
-                    </Stat>
-                    
-                    <Stat>
-                      <StatLabel>Released</StatLabel>
-                      <StatNumber>${event.escrow.released.toLocaleString()}</StatNumber>
-                      <StatHelpText>
-                        {Math.round((event.escrow.released / event.escrow.funded) * 100 || 0)}% of funded
-                      </StatHelpText>
-                    </Stat>
-                  </SimpleGrid>
+                  <Box>
+                    <Heading as="h4" size="sm" mb={2}>
+                      Event Timeline
+                    </Heading>
+                    <HStack spacing={4}>
+                      <Box p={4} borderWidth="1px" borderRadius="md" flex="1">
+                        <Text fontWeight="bold" color="gray.500" fontSize="sm">START DATE</Text>
+                        <Text fontSize="md">{formatDate(event.startDate)}</Text>
+                      </Box>
+                      <Box p={4} borderWidth="1px" borderRadius="md" flex="1">
+                        <Text fontWeight="bold" color="gray.500" fontSize="sm">END DATE</Text>
+                        <Text fontSize="md">{formatDate(event.endDate)}</Text>
+                      </Box>
+                    </HStack>
+                  </Box>
                   
-                  <Progress
-                    value={(event.escrow.funded / event.budget) * 100}
-                    colorScheme="green"
-                    size="sm"
-                    borderRadius="full"
-                    mb={4}
-                  />
+                  <Box>
+                    <Heading as="h4" size="sm" mb={2}>
+                      Location Details
+                    </Heading>
+                    <Text>{event.location}</Text>
+                  </Box>
                   
-                  {/* Coinbase Payment Component */}
-                  <CoinbasePayment 
-                    eventId={eventId || ''}
-                    escrow={event.escrow}
-                    budget={event.budget}
-                    onFundSuccess={(amount) => {
-                      // In a real implementation, we would refresh the event data
-                      // For now, we'll just update the state directly
-                      setEvent({
-                        ...event,
-                        escrow: {
-                          ...event.escrow,
-                          funded: event.escrow.funded + amount
-                        }
-                      });
-                      
-                      toast({
-                        title: "Funding successful",
-                        description: `Successfully added $${amount.toLocaleString()} to escrow`,
-                        status: "success",
-                        duration: 5000,
-                        isClosable: true,
-                      });
-                    }}
-                  />
+                  <Box>
+                    <Heading as="h4" size="sm" mb={2}>
+                      Budget Information
+                    </Heading>
+                    <HStack spacing={4}>
+                      <Box p={4} borderWidth="1px" borderRadius="md" flex="1">
+                        <Text fontWeight="bold" color="gray.500" fontSize="sm">TOTAL BUDGET</Text>
+                        <Text fontSize="xl" fontWeight="bold">${event.budget.toLocaleString()}</Text>
+                      </Box>
+                      <Box p={4} borderWidth="1px" borderRadius="md" flex="1">
+                        <Text fontWeight="bold" color="gray.500" fontSize="sm">ESCROW FUNDED</Text>
+                        <Text fontSize="xl" fontWeight="bold" color={event.escrow.funded === event.budget ? 'green.500' : 'orange.500'}>
+                          ${event.escrow.funded.toLocaleString()} 
+                          <Text as="span" fontSize="md" fontWeight="normal" color="gray.500">
+                            / ${event.budget.toLocaleString()}
+                          </Text>
+                        </Text>
+                      </Box>
+                      <Box p={4} borderWidth="1px" borderRadius="md" flex="1">
+                        <Text fontWeight="bold" color="gray.500" fontSize="sm">RELEASED TO CREW</Text>
+                        <Text fontSize="xl" fontWeight="bold" color="blue.500">
+                          ${event.escrow.released.toLocaleString()}
+                        </Text>
+                      </Box>
+                    </HStack>
+                  </Box>
                 </VStack>
               </Box>
-              
-              {/* Crew Payment Section */}
-              {event.positions.some((position: any) => position.assignedCrew.length > 0) && (
-                <Box borderWidth="1px" borderRadius="lg" p={5} shadow="sm" mt={4}>
-                  <VStack align="stretch" spacing={4}>
-                    <Heading size="sm">Crew Payments</Heading>
-                    
-                    <Table variant="simple">
-                      <Thead>
-                        <Tr>
-                          <Th>Crew Member</Th>
-                          <Th>Position</Th>
-                          <Th isNumeric>Pay Rate</Th>
-                          <Th isNumeric>Days</Th>
-                          <Th isNumeric>Total</Th>
-                          <Th>Status</Th>
-                        </Tr>
-                      </Thead>
-                      <Tbody>
-                        {event.positions.flatMap((position: any) =>
-                          position.assignedCrew.map((crew: any, index: number) => {
-                            // Calculate payment info
-                            const start = new Date(event.startDate);
-                            const end = new Date(event.endDate);
-                            const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) || 1;
-                            const total = position.payRate * days;
-                            // For demo purposes, assume first crew member is paid
-                            const isPaid = index === 0;
+            </TabPanel>
+
+            {/* Crew Panel */}
+            <TabPanel>
+              <Box
+                bg={bgColor}
+                p={6}
+                borderRadius="lg"
+                boxShadow="md"
+                borderWidth="1px"
+                borderColor={borderColor}
+              >
+                <Flex justify="space-between" align="center" mb={4}>
+                  <Heading as="h3" size="md">
+                    Crew Positions
+                  </Heading>
+                  
+                  <Button 
+                    leftIcon={<FiUsers />} 
+                    colorScheme="blue" 
+                    size="sm"
+                    onClick={() => navigate('/crew-directory')}
+                  >
+                    Find Crew
+                  </Button>
+                </Flex>
+                
+                <Divider mb={6} />
+                
+                <Accordion allowToggle defaultIndex={[0]}>
+                  {event.positions.map((position: any, index: number) => (
+                    <AccordionItem key={position.id} mb={4}>
+                      <h2>
+                        <AccordionButton py={4}>
+                          <Box flex="1" textAlign="left">
+                            <Flex align="center">
+                              <Text fontWeight="bold">{position.title}</Text>
+                              <Badge 
+                                ml={2} 
+                                colorScheme={position.isRequired ? "red" : "gray"}
+                                fontSize="xs"
+                              >
+                                {position.isRequired ? "REQUIRED" : "OPTIONAL"}
+                              </Badge>
+                              <Badge 
+                                ml={2} 
+                                colorScheme="blue"
+                                fontSize="xs"
+                              >
+                                {position.assignedCrew.length} / {position.quantity} FILLED
+                              </Badge>
+                            </Flex>
+                          </Box>
+                          <AccordionIcon />
+                        </AccordionButton>
+                      </h2>
+                      <AccordionPanel pb={4}>
+                        <VStack align="stretch" spacing={4}>
+                          <Box>
+                            <Text fontWeight="bold" mb={1}>Description:</Text>
+                            <Text>{position.description}</Text>
+                          </Box>
+                          
+                          <Box>
+                            <Text fontWeight="bold" mb={1}>Pay Rate:</Text>
+                            <Text>${position.payRate}/day</Text>
+                          </Box>
+                          
+                          <Box>
+                            <Text fontWeight="bold" mb={1}>Required Skills:</Text>
+                            <Flex wrap="wrap" gap={2}>
+                              {position.skills.map((skill: string) => (
+                                <Badge key={skill} colorScheme="teal" px={2} py={1}>
+                                  {skill}
+                                </Badge>
+                              ))}
+                            </Flex>
+                          </Box>
+                          
+                          <Divider />
+                          
+                          <Box>
+                            <Flex justify="space-between" align="center" mb={2}>
+                              <Text fontWeight="bold">Assigned Crew:</Text>
+                              <Button
+                                size="xs"
+                                leftIcon={<FiPlus />}
+                                colorScheme="green"
+                                variant="outline"
+                                isDisabled={position.assignedCrew.length >= position.quantity || event.status === 'cancelled'}
+                                onClick={() => navigate(`/crew-directory?positionId=${position.id}&eventId=${id}`)}
+                              >
+                                Add Crew
+                              </Button>
+                            </Flex>
                             
-                            return (
-                              <Tr key={`${position.id}-${crew.id}`}>
-                                <Td>
-                                  <HStack>
-                                    <Avatar size="sm" name={crew.name} src={crew.avatar} />
-                                    <Text>{crew.name}</Text>
-                                  </HStack>
-                                </Td>
-                                <Td>{position.title}</Td>
-                                <Td isNumeric>${position.payRate}/day</Td>
-                                <Td isNumeric>{days}</Td>
-                                <Td isNumeric>${total}</Td>
-                                <Td>
-                                  <Badge
-                                    colorScheme={isPaid ? "green" : "yellow"}
-                                  >
-                                    {isPaid ? "Paid" : "Pending"}
-                                  </Badge>
-                                </Td>
-                              </Tr>
-                            );
-                          })
-                        )}
-                      </Tbody>
-                    </Table>
+                            {position.assignedCrew.length > 0 ? (
+                              <Table size="sm" variant="simple">
+                                <Thead>
+                                  <Tr>
+                                    <Th>Name</Th>
+                                    <Th>Trust Score</Th>
+                                    <Th>Skills</Th>
+                                    <Th isNumeric>Actions</Th>
+                                  </Tr>
+                                </Thead>
+                                <Tbody>
+                                  {position.assignedCrew.map((crew: any) => (
+                                    <Tr key={crew.id}>
+                                      <Td fontWeight="medium">{crew.name}</Td>
+                                      <Td>
+                                        <Badge colorScheme={crew.trustScore > 80 ? "green" : crew.trustScore > 60 ? "yellow" : "orange"}>
+                                          {crew.trustScore}
+                                        </Badge>
+                                      </Td>
+                                      <Td>
+                                        <Flex wrap="wrap" gap={1}>
+                                          {crew.skills.slice(0, 2).map((skill: string) => (
+                                            <Badge key={skill} colorScheme="blue" variant="outline" fontSize="xs">
+                                              {skill}
+                                            </Badge>
+                                          ))}
+                                          {crew.skills.length > 2 && (
+                                            <Tooltip label={crew.skills.slice(2).join(", ")}>
+                                              <Badge colorScheme="gray" fontSize="xs">+{crew.skills.length - 2}</Badge>
+                                            </Tooltip>
+                                          )}
+                                        </Flex>
+                                      </Td>
+                                      <Td isNumeric>
+                                        <Button
+                                          size="xs"
+                                          colorScheme="red"
+                                          variant="ghost"
+                                          leftIcon={<FiX />}
+                                          isDisabled={event.status === 'cancelled'}
+                                          onClick={() => {
+                                            setSelectedCrewForRemoval(crew);
+                                            setSelectedPositionForRemoval(position);
+                                            onRemoveCrewModalOpen();
+                                          }}
+                                        >
+                                          Remove
+                                        </Button>
+                                      </Td>
+                                    </Tr>
+                                  ))}
+                                </Tbody>
+                              </Table>
+                            ) : (
+                              <Alert status="info" size="sm">
+                                <AlertIcon />
+                                <Text fontSize="sm">No crew members assigned to this position yet.</Text>
+                              </Alert>
+                            )}
+                          </Box>
+                        </VStack>
+                      </AccordionPanel>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </Box>
+            </TabPanel>
+
+            {/* Call Times Panel */}
+            <TabPanel>
+              <VStack align="stretch" spacing={4}>
+                <Flex justify="space-between" align="center">
+                  <Heading size="md">Call Times</Heading>
+                  <Button 
+                    leftIcon={<FiPlus />} 
+                    colorScheme="green" 
+                    size="sm"
+                    onClick={() => {
+                      setSelectedCallTime(null);
+                      onEditCallTimeModalOpen();
+                    }}
+                  >
+                    Add Call Time
+                  </Button>
+                </Flex>
+                
+                <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+                  {event.callTimes.map((callTime: any) => (
+                    <Box 
+                      key={callTime.id} 
+                      borderWidth="1px" 
+                      borderRadius="lg" 
+                      p={4}
+                      shadow="sm"
+                    >
+                      <VStack align="stretch" spacing={3}>
+                        <Flex justify="space-between">
+                          <Text fontWeight="bold">
+                            {new Date(callTime.date).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric'
+                            })}
+                          </Text>
+                          <HStack>
+                            <IconButton
+                              aria-label="Edit call time"
+                              icon={<FiEdit />}
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => {
+                                setSelectedCallTime(callTime);
+                                onEditCallTimeModalOpen();
+                              }}
+                            />
+                            <IconButton
+                              aria-label="Delete call time"
+                              icon={<FiTrash2 />}
+                              size="sm"
+                              variant="ghost"
+                              colorScheme="red"
+                            />
+                          </HStack>
+                        </Flex>
+                        
+                        <Text fontWeight="bold">
+                          {new Date(callTime.date).toLocaleTimeString('en-US', {
+                            hour: 'numeric',
+                            minute: 'numeric',
+                            hour12: true
+                          })}
+                        </Text>
+                        
+                        <HStack>
+                          <FiMapPin />
+                          <Text>{callTime.location}</Text>
+                        </HStack>
+                        
+                        <Text fontSize="sm" color="gray.600">
+                          {callTime.description}
+                        </Text>
+                        
+                        <Flex gap={2} wrap="wrap">
+                          {callTime.departments.map((dept: string) => (
+                            <Tag 
+                              key={dept} 
+                              size="sm" 
+                              colorScheme="purple" 
+                              mt={1}
+                            >
+                              {dept}
+                            </Tag>
+                          ))}
+                        </Flex>
+                      </VStack>
+                    </Box>
+                  ))}
+                </SimpleGrid>
+              </VStack>
+            </TabPanel>
+
+            {/* Payments Panel */}
+            <TabPanel>
+              <VStack align="stretch" spacing={4}>
+                <Heading size="md">Payments & Escrow</Heading>
+                
+                <Box borderWidth="1px" borderRadius="lg" p={5} shadow="sm">
+                  <VStack align="stretch" spacing={4}>
+                    <Heading size="sm">Escrow Status</Heading>
                     
-                    {/* Add a button to release funds to crew */}
-                    <Box display="flex" justifyContent="flex-end" mt={2}>
+                    <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
+                      <Stat>
+                        <StatLabel>Total Budget</StatLabel>
+                        <StatNumber>${event.budget.toLocaleString()}</StatNumber>
+                      </Stat>
+                      
+                      <Stat>
+                        <StatLabel>Funded</StatLabel>
+                        <StatNumber>${event.escrow.funded.toLocaleString()}</StatNumber>
+                        <StatHelpText>
+                          {Math.round((event.escrow.funded / event.budget) * 100)}% of budget
+                        </StatHelpText>
+                      </Stat>
+                      
+                      <Stat>
+                        <StatLabel>Released</StatLabel>
+                        <StatNumber>${event.escrow.released.toLocaleString()}</StatNumber>
+                        <StatHelpText>
+                          {Math.round((event.escrow.released / event.escrow.funded) * 100 || 0)}% of funded
+                        </StatHelpText>
+                      </Stat>
+                    </SimpleGrid>
+                    
+                    <Progress
+                      value={(event.escrow.funded / event.budget) * 100}
+                      colorScheme="green"
+                      size="sm"
+                      borderRadius="full"
+                      mb={4}
+                    />
+                    
+                    {/* Visible indicator for Coinbase payment */}
+                    <Box bg="blue.50" p={3} borderRadius="md" mb={4}>
+                      <Text color="blue.800" fontWeight="bold">
+                        Coinbase Payment Portal
+                      </Text>
+                      <Text color="blue.600" fontSize="sm">
+                        Fund your event using Coinbase's secure payment system
+                      </Text>
+                    </Box>
+                    
+                    {/* Coinbase Payment Component with Fallback */}
+                    <Box border="1px dashed" borderColor="gray.300" p={4} borderRadius="md">
+                      <Text mb={3}>Alternative Payment Options:</Text>
                       <Button 
-                        leftIcon={<FiUnlock />} 
-                        colorScheme="blue"
-                        onClick={onReleaseEscrowModalOpen}
-                        isDisabled={
-                          event.status === 'cancelled' || 
-                          event.escrow.funded <= 0 || 
-                          event.escrow.funded <= event.escrow.released
-                        }
-                        size="md"
+                        colorScheme="blue" 
+                        leftIcon={<FiDollarSign />}
+                        onClick={onFundEscrowModalOpen}
+                        mb={3}
+                        width="full"
                       >
-                        Release Funds to Crew
+                        Fund Escrow Account
                       </Button>
+                      
+                      <CoinbasePayment 
+                        eventId={id || ''}
+                        escrow={event.escrow}
+                        budget={event.budget}
+                        onFundSuccess={(amount) => {
+                          console.log('Escrow funding success:', amount);
+                          // In a real implementation, we would refresh the event data
+                          // For now, we'll just update the state directly
+                          setEvent({
+                            ...event,
+                            escrow: {
+                              ...event.escrow,
+                              funded: event.escrow.funded + amount
+                            }
+                          });
+                          
+                          toast({
+                            title: "Funding successful",
+                            description: `Successfully added $${amount.toLocaleString()} to escrow`,
+                            status: "success",
+                            duration: 5000,
+                            isClosable: true,
+                          });
+                          
+                          setFundAmount('');
+                          onFundEscrowModalClose();
+                        }}
+                      />
                     </Box>
                   </VStack>
                 </Box>
-              )}
-              
-            </VStack>
-          </TabPanel>
-        </TabPanels>
+                
+                {/* Crew Payment Section */}
+                {event.positions.some((position: any) => position.assignedCrew.length > 0) && (
+                  <Box borderWidth="1px" borderRadius="lg" p={5} shadow="sm" mt={4}>
+                    <VStack align="stretch" spacing={4}>
+                      <Heading size="sm">Crew Payments</Heading>
+                      
+                      <Table variant="simple">
+                        <Thead>
+                          <Tr>
+                            <Th>Crew Member</Th>
+                            <Th>Position</Th>
+                            <Th isNumeric>Pay Rate</Th>
+                            <Th isNumeric>Days</Th>
+                            <Th isNumeric>Total</Th>
+                            <Th>Status</Th>
+                          </Tr>
+                        </Thead>
+                        <Tbody>
+                          {event.positions.flatMap((position: any) =>
+                            position.assignedCrew.map((crew: any, index: number) => {
+                              // Calculate payment info
+                              const start = new Date(event.startDate);
+                              const end = new Date(event.endDate);
+                              const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) || 1;
+                              const total = position.payRate * days;
+                              // For demo purposes, assume first crew member is paid
+                              const isPaid = index === 0;
+                              
+                              return (
+                                <Tr key={`${position.id}-${crew.id}`}>
+                                  <Td>
+                                    <HStack>
+                                      <Avatar size="sm" name={crew.name} src={crew.avatar} />
+                                      <Text>{crew.name}</Text>
+                                    </HStack>
+                                  </Td>
+                                  <Td>{position.title}</Td>
+                                  <Td isNumeric>${position.payRate}/day</Td>
+                                  <Td isNumeric>{days}</Td>
+                                  <Td isNumeric>${total}</Td>
+                                  <Td>
+                                    <Badge
+                                      colorScheme={isPaid ? "green" : "yellow"}
+                                    >
+                                      {isPaid ? "Paid" : "Pending"}
+                                    </Badge>
+                                  </Td>
+                                </Tr>
+                              );
+                            })
+                          )}
+                        </Tbody>
+                      </Table>
+                      
+                      {/* Add a button to release funds to crew */}
+                      <Box display="flex" justifyContent="flex-end" mt={2}>
+                        <Button 
+                          leftIcon={<FiUnlock />} 
+                          colorScheme="blue"
+                          onClick={onReleaseEscrowModalOpen}
+                          isDisabled={
+                            event.status === 'cancelled' || 
+                            event.escrow.funded <= 0 || 
+                            event.escrow.funded <= event.escrow.released
+                          }
+                          size="md"
+                        >
+                          Release Funds to Crew
+                        </Button>
+                      </Box>
+                    </VStack>
+                  </Box>
+                )}
+                
+              </VStack>
+            </TabPanel>
+          </TabPanels>
+        ) : (
+          <Alert status="info" borderRadius="md" p={6}>
+            <AlertIcon />
+            <AlertTitle>Loading...</AlertTitle>
+            <AlertDescription>Please wait while we load the event data.</AlertDescription>
+          </Alert>
+        )}
       </Tabs>
       
       {/* Modals will be added here in the next steps */}
@@ -991,7 +1027,7 @@ const ManageEvent: React.FC = () => {
                   setLoading(true);
                   
                   await eventManagementService.removeCrewMember(
-                    eventId || '',
+                    id || '',
                     selectedPositionForRemoval.id,
                     selectedCrewForRemoval.id
                   );
@@ -1097,7 +1133,7 @@ const ManageEvent: React.FC = () => {
                   setPaymentLoading(true);
                   
                   await eventManagementService.fundEscrow(
-                    eventId || '',
+                    id || '',
                     fundAmount
                   );
                   
@@ -1225,7 +1261,7 @@ const ManageEvent: React.FC = () => {
                   const amountToRelease = event.escrow.funded - event.escrow.released;
                   
                   await eventManagementService.releaseEscrow(
-                    eventId || ''
+                    id || ''
                   );
                   
                   // Update local state
@@ -1365,7 +1401,7 @@ const ManageEvent: React.FC = () => {
                   }
                   
                   await eventManagementService.updateCallTimes(
-                    eventId || '',
+                    id || '',
                     updatedCallTimes
                   );
                   
@@ -1388,6 +1424,8 @@ const ManageEvent: React.FC = () => {
                   onEditCallTimeModalClose();
                 } catch (err) {
                   console.error('Error updating call time:', err);
+                  
+                  // Show error message
                   toast({
                     title: "Update failed",
                     description: "There was a problem updating the call time. Please try again.",

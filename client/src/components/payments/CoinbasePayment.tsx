@@ -1,42 +1,43 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import {
   Box,
-  VStack,
   Heading,
   Text,
-  Button,
-  useToast,
+  VStack,
   HStack,
-  Divider,
-  Alert,
-  AlertIcon,
-  Image,
+  Button,
+  Progress,
   Stat,
   StatLabel,
   StatNumber,
   StatHelpText,
-  Spinner,
+  FormControl,
+  FormLabel,
+  Input,
+  IconButton,
+  Tooltip,
+  Divider,
+  useToast,
   useDisclosure,
   Modal,
   ModalOverlay,
   ModalContent,
   ModalHeader,
+  ModalFooter,
   ModalBody,
   ModalCloseButton,
-  ModalFooter,
-  Input,
-  FormControl,
-  FormLabel,
+  Alert,
+  AlertIcon,
+  Image,
+  Flex,
+  Spinner,
   Card,
-  CardHeader,
   CardBody,
-  CardFooter,
-  Badge,
-  Tooltip,
-  IconButton,
 } from '@chakra-ui/react';
 import { FiExternalLink, FiShoppingBag, FiCreditCard, FiWifi, FiCheckCircle, FiDollarSign, FiLock } from 'react-icons/fi';
 import { OnchainContext } from '../providers/OnchainKitProvider';
+import { useAccount, useConnect, useDisconnect } from 'wagmi';
+import { injected } from 'wagmi/connectors';
 import './coinbase-styles.css';
 
 interface CoinbasePaymentProps {
@@ -50,46 +51,32 @@ interface CoinbasePaymentProps {
   onFundSuccess: (amount: number) => void;
 }
 
-// Define funding method options
-const FUNDING_METHODS = [
-  { 
-    id: 'coinbase',
-    name: 'Coinbase',
-    description: 'Fund using Coinbase Pay',
-    icon: <FiCreditCard size="24px" />,
-    color: 'blue.500',
-    bgColor: 'blue.50',
-  },
-  { 
-    id: 'wallet',
-    name: 'Crypto Wallet',
-    description: 'Connect your wallet and transfer funds',
-    icon: <FiWifi size="24px" />,
-    color: 'purple.500',
-    bgColor: 'purple.50',
-  },
-];
-
-const steps = [
-  { title: 'Select Payment', description: 'Choose payment method' },
-  { title: 'Process Payment', description: 'Complete payment' },
-  { title: 'Confirmation', description: 'Payment confirmed' },
-];
-
 const CoinbasePayment: React.FC<CoinbasePaymentProps> = ({
   eventId,
   escrow,
   budget,
   onFundSuccess,
 }) => {
+  console.log('CoinbasePayment component initialized with:', { eventId, escrow, budget });
+  
   const toast = useToast();
-  const { apiKey } = useContext(OnchainContext);
+  const { apiKey, createCharge, isLoading: apiLoading, walletClient } = useContext(OnchainContext);
+  
+  // Use wagmi hooks
+  const { address, isConnected } = useAccount();
+  const { connect } = useConnect();
+  const { disconnect } = useDisconnect();
+  
+  console.log('Wallet connection status:', { address, isConnected });
+  console.log('OnchainContext:', { apiKey, walletClient });
   
   // States
   const [fundingAmount, setFundingAmount] = useState<number>(budget - escrow.funded > 0 ? budget - escrow.funded : 0);
-  const [selectedMethod, setSelectedMethod] = useState<string | null>(null);
+  const [selectedMethod, setSelectedMethod] = useState<string | null>("coinbase");
   const [isLoading, setIsLoading] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
+  const { isOpen: isPaymentModalOpen, onOpen: onPaymentModalOpen, onClose: onPaymentModalClose } = useDisclosure();
   
   // Check if escrow is fully funded
   const isFullyFunded = escrow.funded >= budget;
@@ -107,63 +94,138 @@ const CoinbasePayment: React.FC<CoinbasePaymentProps> = ({
   // Handle method selection
   const handleMethodSelect = (methodId: string) => {
     setSelectedMethod(methodId);
-    setActiveStep(0);
+    setActiveStep(1);
   };
   
   // Handle funding with Coinbase
   const handleCoinbaseFunding = async () => {
-    setIsLoading(true);
-    
-    try {
-      if (!apiKey) {
-        toast({
-          title: 'API Key Missing',
-          description: 'Coinbase API key is not configured',
-          status: 'error',
-          duration: 5000,
-          isClosable: true,
-        });
-        return;
-      }
-      
-      // In a real implementation, this would initiate the Coinbase payment flow
-      // For now, we'll simulate a successful payment
-      setTimeout(() => {
-        // Move to success step
-        setActiveStep(2);
-        
-        // Notify parent component of successful funding
-        onFundSuccess(fundingAmount);
-        
-        toast({
-          title: 'Payment Successful',
-          description: `Successfully funded ${formatCurrency(fundingAmount)}`,
-          status: 'success',
-          duration: 5000,
-          isClosable: true,
-        });
-      }, 2000);
-    } catch (error) {
-      console.error('Payment error:', error);
+    if (!isConnected || !address) {
       toast({
-        title: 'Payment Failed',
-        description: 'An error occurred during payment processing',
+        title: 'Wallet not connected',
+        description: 'Please connect your wallet to continue',
         status: 'error',
         duration: 5000,
         isClosable: true,
       });
+      return;
+    }
+
+    if (fundingAmount <= 0) {
+      toast({
+        title: 'Invalid amount',
+        description: 'Please enter a valid funding amount',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    setActiveStep(2);
+
+    try {
+      console.log(`Funding escrow ${escrow.contractAddress} with $${fundingAmount}`);
+      
+      // Create the charge with actual blockchain parameters
+      const charge = await createCharge({
+        amount: fundingAmount / 1000, // Convert to ETH amount for demo (1000 USD = 1 ETH for simplicity)
+        from: address,
+        to: escrow.contractAddress || '0x8a71...3e9f', // Use the escrow address if available
+        metadata: {
+          eventId,
+          purpose: 'event funding'
+        }
+      });
+
+      // Set payment URL to Etherscan transaction view
+      setPaymentUrl(charge.hosted_url);
+      
+      // Open payment modal to show transaction details
+      onPaymentModalOpen();
+      
+      // Notify the parent component about the successful funding
+      onFundSuccess(fundingAmount);
+      
+      // Success toast
+      toast({
+        title: 'Transaction initiated',
+        description: `Transaction hash: ${charge.id.substring(0, 8)}...`,
+        status: 'success',
+        duration: 5000,
+        isClosable: true,
+      });
+      
+    } catch (error) {
+      console.error('Error funding event:', error);
+      
+      toast({
+        title: 'Funding failed',
+        description: error instanceof Error ? error.message : 'Unknown error occurred',
+        status: 'error',
+        duration: 5000,
+        isClosable: true,
+      });
+      
+      setActiveStep(1);
     } finally {
       setIsLoading(false);
     }
   };
   
+  // Connect wallet function
+  const connectWallet = () => {
+    try {
+      // Connect using the injected connector (MetaMask)
+      connect({ connector: injected() });
+      
+      // Show success toast but only if no errors
+      setTimeout(() => {
+        if (isConnected) {
+          toast({
+            title: "Wallet connected",
+            description: "Your wallet has been connected successfully",
+            status: "success",
+            duration: 5000,
+            isClosable: true,
+          });
+        }
+      }, 500);
+    } catch (error) {
+      console.error("Failed to connect wallet:", error);
+      toast({
+        title: "Connection failed",
+        description: "Failed to connect wallet. Please try again.",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      });
+    }
+  };
+
+  // Disconnect wallet function
+  const disconnectWallet = () => {
+    try {
+      disconnect();
+      toast({
+        title: "Wallet disconnected",
+        description: "Your wallet has been disconnected",
+        status: "info",
+        duration: 5000,
+        isClosable: true,
+      });
+    } catch (error) {
+      console.error("Failed to disconnect wallet:", error);
+    }
+  };
+
   return (
     <Box borderRadius="lg" overflow="hidden" bg="white" color="gray.800">
       <Box p={6} bg="blue.600" color="white">
         <Heading size="md">Fund Escrow Contract</Heading>
         <Text fontSize="sm" mt={1}>Secure payment to fund your event escrow</Text>
       </Box>
-      
+
       <Box p={6}>
         <VStack spacing={6} align="stretch">
           {/* Funding Status */}
@@ -183,121 +245,177 @@ const CoinbasePayment: React.FC<CoinbasePaymentProps> = ({
                   </Tooltip>
                 </HStack>
               </Box>
-              <Badge colorScheme={isFullyFunded ? 'green' : 'orange'} p={2} borderRadius="md">
-                {isFullyFunded ? 'Fully Funded' : 'Funding Required'}
-              </Badge>
-            </HStack>
-          </Box>
-          
-          <Divider />
-          
-          {/* Funding Stats */}
-          <HStack spacing={8} justify="space-between">
-            <Stat>
-              <StatLabel>Budget</StatLabel>
-              <StatNumber>{formatCurrency(budget)}</StatNumber>
-            </Stat>
-            <Stat>
-              <StatLabel>Funded</StatLabel>
-              <StatNumber>{formatCurrency(escrow.funded)}</StatNumber>
-              <StatHelpText>{((escrow.funded / budget) * 100).toFixed(0)}%</StatHelpText>
-            </Stat>
-            <Stat>
-              <StatLabel>Needed</StatLabel>
-              <StatNumber>{formatCurrency(Math.max(0, budget - escrow.funded))}</StatNumber>
-            </Stat>
-          </HStack>
-          
-          {!isFullyFunded && (
-            <>
-              <Divider />
-              
-              {/* Payment Methods */}
+
               <Box>
-                <Text fontWeight="bold" mb={4}>Select Payment Method</Text>
-                <HStack spacing={4}>
-                  {FUNDING_METHODS.map((method) => (
-                    <Card 
-                      key={method.id}
-                      variant={selectedMethod === method.id ? 'filled' : 'outline'}
-                      cursor="pointer"
-                      onClick={() => handleMethodSelect(method.id)}
-                      flex="1"
-                      bg={selectedMethod === method.id ? method.bgColor : 'white'}
-                    >
-                      <CardBody>
-                        <HStack spacing={4}>
-                          <Box bg={method.bgColor} p={3} borderRadius="md">
-                            {method.icon}
-                          </Box>
-                          <Box>
-                            <Text fontWeight="bold">{method.name}</Text>
-                            <Text fontSize="sm" color="gray.600">{method.description}</Text>
-                          </Box>
-                        </HStack>
-                      </CardBody>
-                    </Card>
-                  ))}
-                </HStack>
+                <Stat textAlign="right">
+                  <StatLabel>Funding Progress</StatLabel>
+                  <StatNumber>{Math.round((escrow.funded / budget) * 100)}%</StatNumber>
+                  <StatHelpText>
+                    {formatCurrency(escrow.funded)} of {formatCurrency(budget)}
+                  </StatHelpText>
+                </Stat>
               </Box>
-              
-              {/* Coinbase Payment Option */}
-              {selectedMethod === 'coinbase' && (
-                <Box mt={4} p={6} borderWidth="1px" borderRadius="md" borderColor="blue.100" bg="blue.50">
-                  <VStack spacing={4}>
-                    <Box bg="white" p={4} borderRadius="md" width="100%" textAlign="center">
-                      <HStack spacing={2} justify="center" mb={2}>
-                        <FiDollarSign />
-                        <Text fontWeight="bold">Amount to Fund</Text>
-                      </HStack>
-                      <Heading size="lg">{formatCurrency(fundingAmount)}</Heading>
+            </HStack>
+
+            <Progress
+              value={(escrow.funded / budget) * 100}
+              colorScheme="green"
+              size="sm"
+              borderRadius="full"
+              mt={2}
+            />
+          </Box>
+
+          <Divider />
+
+          {isFullyFunded ? (
+            <Alert status="success" borderRadius="md">
+              <AlertIcon />
+              <Box>
+                <Text fontWeight="bold">Escrow Fully Funded</Text>
+                <Text fontSize="sm">The escrow contract has been fully funded.</Text>
+              </Box>
+            </Alert>
+          ) : (
+            <>
+              {/* Wallet Connection */}
+              {!isConnected && (
+                <Box mb={4}>
+                  <Alert status="info" borderRadius="md" mb={3}>
+                    <AlertIcon />
+                    <Box>
+                      <Text fontWeight="bold">Connect Your Wallet</Text>
+                      <Text fontSize="sm">Connect your wallet to continue with payments</Text>
                     </Box>
-                    
-                    <Button
-                      leftIcon={<FiLock />}
-                      rightIcon={<FiCreditCard />}
-                      colorScheme="blue"
-                      size="lg"
-                      width="100%"
-                      onClick={handleCoinbaseFunding}
-                      isLoading={isLoading}
-                      loadingText="Processing Payment"
-                    >
-                      Pay with Coinbase
-                    </Button>
-                    
-                    {activeStep === 2 && (
-                      <Alert status="success" borderRadius="md">
-                        <AlertIcon />
-                        <HStack>
-                          <FiCheckCircle />
-                          <Text>Payment successful! Escrow has been funded.</Text>
-                        </HStack>
-                      </Alert>
-                    )}
-                    
-                    <Text fontSize="xs" color="gray.600" textAlign="center">
-                      Secured by Coinbase. Your payment information is encrypted and secure.
-                    </Text>
-                  </VStack>
+                  </Alert>
+                  <Button
+                    colorScheme="blue"
+                    width="full"
+                    onClick={connectWallet}
+                    leftIcon={<FiWifi />}
+                  >
+                    Connect Wallet
+                  </Button>
                 </Box>
               )}
-              
-              {/* Wallet Payment Option - Placeholder */}
-              {selectedMethod === 'wallet' && (
-                <Box mt={4} p={6} borderWidth="1px" borderRadius="md">
-                  <VStack spacing={4} align="center">
-                    <Text>Connect your wallet to continue</Text>
-                    <Button colorScheme="purple">
-                      Connect Wallet
-                    </Button>
-                  </VStack>
+
+              {/* Wallet Disconnection */}
+              {isConnected && (
+                <Box mb={4}>
+                  <Alert status="info" borderRadius="md" mb={3}>
+                    <AlertIcon />
+                    <Box>
+                      <Text fontWeight="bold">Connected Wallet</Text>
+                      <Text fontSize="sm">Your wallet is connected: {address}</Text>
+                    </Box>
+                  </Alert>
+                  <Button
+                    colorScheme="red"
+                    width="full"
+                    onClick={disconnectWallet}
+                    leftIcon={<FiLock />}
+                  >
+                    Disconnect Wallet
+                  </Button>
                 </Box>
+              )}
+
+              {/* Payment Method Selection */}
+              {isConnected && (
+                <>
+                  <Box>
+                    <Text fontWeight="bold" mb={3}>Select Payment Method</Text>
+
+                    <Card
+                      variant="outline"
+                      cursor="pointer"
+                      onClick={() => handleMethodSelect('coinbase')}
+                      bg={selectedMethod === 'coinbase' ? 'blue.50' : 'white'}
+                      borderColor={selectedMethod === 'coinbase' ? 'blue.500' : 'gray.200'}
+                      _hover={{ borderColor: 'blue.300' }}
+                      transition="all 0.2s"
+                    >
+                      <CardBody>
+                        <Flex align="center" justify="space-between">
+                          <HStack>
+                            <Image
+                              src="https://cryptologos.cc/logos/coinbase-coin-coinbase-logo.png"
+                              boxSize="40px"
+                              alt="Coinbase Logo"
+                            />
+                            <Box>
+                              <Text fontWeight="bold">Coinbase</Text>
+                              <Text fontSize="sm" color="gray.500">Pay with crypto or credit card</Text>
+                            </Box>
+                          </HStack>
+                          {selectedMethod === 'coinbase' && <FiCheckCircle color="green" />}
+                        </Flex>
+                      </CardBody>
+                    </Card>
+                  </Box>
+
+                  {/* Payment Details */}
+                  {selectedMethod && (
+                    <Box>
+                      <Text fontWeight="bold" mb={3}>Payment Details</Text>
+
+                      <FormControl>
+                        <FormLabel>Amount to Fund (USD)</FormLabel>
+                        <Input
+                          type="number"
+                          value={fundingAmount}
+                          onChange={(e) => setFundingAmount(Number(e.target.value))}
+                          min={1}
+                          max={budget - escrow.funded}
+                        />
+                      </FormControl>
+
+                      <Button
+                        colorScheme="blue"
+                        size="lg"
+                        width="full"
+                        mt={4}
+                        leftIcon={<FiCreditCard />}
+                        onClick={handleCoinbaseFunding}
+                        isLoading={isLoading || apiLoading}
+                        loadingText="Processing"
+                        disabled={fundingAmount <= 0 || fundingAmount > budget - escrow.funded}
+                      >
+                        Pay {formatCurrency(fundingAmount)}
+                      </Button>
+                    </Box>
+                  )}
+                </>
               )}
             </>
           )}
         </VStack>
       </Box>
+
+      {/* Payment Modal */}
+      <Modal isOpen={isPaymentModalOpen} onClose={onPaymentModalClose} size="xl">
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Complete Your Payment</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6}>
+            {paymentUrl ? (
+              <VStack spacing={4}>
+                <Text>Please complete your payment through Coinbase Commerce:</Text>
+                <Box as="iframe" src={paymentUrl} width="100%" height="400px" />
+              </VStack>
+            ) : (
+              <VStack spacing={4} justify="center" height="200px">
+                <Spinner size="xl" />
+                <Text>Preparing payment portal...</Text>
+              </VStack>
+            )}
+          </ModalBody>
+          <ModalFooter>
+            <Button onClick={onPaymentModalClose}>Cancel</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </Box>
   );
 };

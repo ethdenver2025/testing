@@ -1,5 +1,7 @@
-import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAccount, useConnect, useDisconnect, useSignMessage } from 'wagmi';
+import { injected } from 'wagmi/connectors';
 
 // Define types
 export type UserType = 'PRODUCTION_CREW' | 'EVENT_ORGANIZER';
@@ -31,6 +33,7 @@ interface AuthContextType {
   loginWithGoogle: (token: string) => Promise<void>;
   switchRole: (role: UserType) => void;
   handleMockAuth: () => void;
+  updateProfile: (data: { username: string; userTypes: UserType[] }) => Promise<void>;
 }
 
 // Create context with default values
@@ -44,6 +47,7 @@ const AuthContext = createContext<AuthContextType>({
   loginWithGoogle: async () => {},
   switchRole: () => {},
   handleMockAuth: () => {},
+  updateProfile: async () => {},
 });
 
 // Custom hook to use the auth context
@@ -54,23 +58,23 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
-export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>({
-    id: '1',
-    name: 'Demo User',
-    username: 'demo_user',
-    email: 'demo@example.com',
-    walletAddress: '0x1234...5678',
-    userTypes: ['PRODUCTION_CREW', 'EVENT_ORGANIZER'],
-    activeRole: 'PRODUCTION_CREW',
-    profile: {
-      bio: 'Experienced production crew member and event organizer',
-      skills: ['Audio', 'Lighting', 'Event Management']
-    },
-    isProfileComplete: true
-  });
-  const [isLoading, setIsLoading] = useState(false);
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const navigate = useNavigate();
+
+  // Get wagmi hooks
+  const { address, isConnected } = useAccount();
+  const { connectAsync } = useConnect();
+  const { disconnectAsync } = useDisconnect();
+  const { signMessageAsync } = useSignMessage();
+
+  // Handle account changes
+  useEffect(() => {
+    if (address && isConnected && !user?.walletAddress) {
+      console.log('Connected wallet detected:', address);
+    }
+  }, [address, isConnected, user]);
 
   // Calculate if authenticated
   const isAuthenticated = !!user;
@@ -126,19 +130,38 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, [user, navigate]);
 
-  // Mock wallet login
+  // Login with wallet using wagmi
   const loginWithWallet = async () => {
     setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Check if already connected with wagmi
+      if (!isConnected) {
+        // Connect to wallet using wagmi
+        await connectAsync({ connector: injected() });
+      }
       
-      // Mock user data
+      // Get the connected address
+      const walletAddress = address;
+      
+      if (!walletAddress) {
+        throw new Error('Failed to get wallet address');
+      }
+      
+      // Sign a message to prove ownership of the wallet
+      const message = `Sign this message to authenticate with Formicary: ${Date.now()}`;
+      const signature = await signMessageAsync({ message });
+      
+      console.log('Wallet authenticated with address:', walletAddress);
+      console.log('Signature:', signature);
+      
+      // In a real app, you would verify this signature on your backend
+      // For now, we'll just set mock user data based on the wallet address
       const userData: User = {
         id: '1',
         name: 'Wallet User',
         username: 'wallet_user',
-        email: 'wallet@example.com',
-        walletAddress: '0x1234...5678',
+        email: `${walletAddress.substring(0, 8)}@wallet.com`,
+        walletAddress: walletAddress,
         userTypes: ['PRODUCTION_CREW'],
         activeRole: 'PRODUCTION_CREW',
         profile: {
@@ -207,6 +230,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     navigate('/dashboard');
   };
 
+  // Update profile function
+  const updateProfile = async (data: { username: string; userTypes: UserType[] }) => {
+    setIsLoading(true);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Update user data
+      const updatedUserData: User = {
+        ...user,
+        username: data.username,
+        userTypes: data.userTypes
+      };
+      
+      setUser(updatedUserData);
+    } catch (error) {
+      console.error('Update profile error:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -218,7 +263,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         loginWithWallet,
         loginWithGoogle,
         switchRole,
-        handleMockAuth
+        handleMockAuth,
+        updateProfile
       }}
     >
       {children}

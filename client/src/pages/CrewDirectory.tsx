@@ -366,3 +366,5 @@ export const CrewDirectory = () => {
     </Container>
   );
 };
+
+export default CrewDirectory;

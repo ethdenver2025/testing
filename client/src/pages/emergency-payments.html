@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payments Dashboard</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #121212;
+            color: #E0E0E0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .card {
+            background-color: #1E1E1E;
+            border: 1px solid #333333;
+            border-radius: 8px;
+            color: #E0E0E0;
+            margin-bottom: 20px;
+        }
+        .card:hover {
+            border-color: #2979FF;
+            transform: translateY(-2px);
+            transition: all 0.3s;
+        }
+        .card-header {
+            border-bottom: 1px solid #333333;
+            background-color: #1E1E1E;
+        }
+        .btn-primary {
+            background-color: #2979FF;
+            border-color: #2979FF;
+        }
+        .btn-primary:hover {
+            background-color: #2264D1;
+            border-color: #2264D1;
+        }
+        .stat-value {
+            color: #2979FF;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .progress {
+            background-color: #333333;
+        }
+        .progress-bar {
+            background-color: #2979FF;
+        }
+        .transaction-item {
+            background-color: #252525;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+        .text-success {
+            color: #4CAF50 !important;
+        }
+        .text-danger {
+            color: #F44336 !important;
+        }
+        .nav-logo {
+            color: #2979FF;
+            font-size: 24px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #121212; border-bottom: 1px solid #333333;">
+        <div class="container">
+            <a class="navbar-brand nav-logo" href="#">
+                <svg width="30" height="30" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 10px; display: inline-block;">
+                    <path d="M18 80 L50 20 L82 80 Z" stroke="#2979FF" stroke-width="5" fill="none" stroke-linejoin="round"></path>
+                    <path d="M40 37 L33 27" stroke="#2979FF" stroke-width="2.5" stroke-linecap="round"></path>
+                    <path d="M60 37 L67 27" stroke="#2979FF" stroke-width="2.5" stroke-linecap="round"></path>
+                    <circle cx="50" cy="42" r="6" fill="#2979FF"></circle>
+                    <circle cx="50" cy="55" r="3" fill="#2979FF"></circle>
+                    <circle cx="50" cy="68" r="3" fill="#2979FF"></circle>
+                </svg>
+                Formicary
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Events</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Directory</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Trusted Crew</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#">Payments</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Messages</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row mb-4">
+            <div class="col">
+                <h1>Payments Dashboard</h1>
+                <p class="text-muted">Manage your event budgets and crew payments in one place</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Budget</h5>
+                        <div class="stat-value">$25,000</div>
+                        <div class="text-muted">All Events</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Funds Committed</h5>
+                        <div class="stat-value">$15,000</div>
+                        <div class="text-muted">60% of total budget</div>
+                        <div class="progress mt-2">
+                            <div class="progress-bar" role="progressbar" style="width: 60%" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Funds Released</h5>
+                        <div class="stat-value">$5,000</div>
+                        <div class="text-muted">33% of committed funds</div>
+                        <div class="progress mt-2">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 33%" aria-valuenow="33" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Coinbase Payment Portal</h5>
+                        <button class="btn btn-primary btn-sm">Connect Wallet</button>
+                    </div>
+                    <div class="card-body">
+                        <p>Fund your event escrow account using Coinbase's secure payment system.</p>
+                        <div class="border border-secondary rounded p-4 text-center" style="border-style: dashed !important;">
+                            <h5>Secure Payment Processing</h5>
+                            <p class="text-muted mb-0">Connect your wallet to access the payment interface</p>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <h6>Event Funding</h6>
+                            <div class="transaction-item d-flex justify-content-between">
+                                <div>
+                                    <div>ETHDenver Hackathon</div>
+                                    <small class="text-muted">Escrow: 0x8a71...</small>
+                                </div>
+                                <div class="text-end">
+                                    <div>$12,000 / $20,000</div>
+                                    <div class="progress mt-1" style="height: 6px; width: 100px;">
+                                        <div class="progress-bar" role="progressbar" style="width: 60%" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="transaction-item d-flex justify-content-between">
+                                <div>
+                                    <div>Community Meetup</div>
+                                    <small class="text-muted">Escrow: 0x3f21...</small>
+                                </div>
+                                <div class="text-end">
+                                    <div>$3,000 / $5,000</div>
+                                    <div class="progress mt-1" style="height: 6px; width: 100px;">
+                                        <div class="progress-bar" role="progressbar" style="width: 60%" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Recent Transactions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="transaction-item d-flex justify-content-between">
+                            <div>ETHDenver Hackathon</div>
+                            <div class="text-success">+$5,000</div>
+                        </div>
+                        <div class="transaction-item d-flex justify-content-between">
+                            <div>Crew Payment - John D.</div>
+                            <div class="text-danger">-$1,200</div>
+                        </div>
+                        <div class="transaction-item d-flex justify-content-between">
+                            <div>Venue Deposit</div>
+                            <div class="text-danger">-$2,000</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Payment Schedule</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="transaction-item d-flex justify-content-between">
+                            <div>Venue Final Payment</div>
+                            <div>Mar 15, 2025</div>
+                        </div>
+                        <div class="transaction-item d-flex justify-content-between">
+                            <div>Catering Deposit</div>
+                            <div>Mar 20, 2025</div>
+                        </div>
+                        <div class="transaction-item d-flex justify-content-between">
+                            <div>Crew Final Payment</div>
+                            <div>Mar 31, 2025</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

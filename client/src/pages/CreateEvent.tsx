@@ -78,11 +78,11 @@ export const CreateEvent = () => {
 
   // Handle crew member selection for a role
   const handleCrewSelected = (crewMember: CrewMember, role: string) => {
-    setEventRoles(prevRoles => 
-      prevRoles.map(r => 
+    setEventRoles(prevRoles => {
+      return prevRoles.map(r => 
         r.role === role ? { ...r, crewMemberId: crewMember.id } : r
-      )
-    );
+      );
+    });
 
     toast({
       title: 'Crew Member Added',

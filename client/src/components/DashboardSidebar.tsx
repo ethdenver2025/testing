@@ -15,6 +15,7 @@ import {
   FiThumbsUp,
   FiAward,
   FiBookOpen,
+  FiDollarSign,
 } from 'react-icons/fi';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -39,13 +40,24 @@ export const DashboardSidebar = () => {
       { path: '/', icon: FiCalendar, label: 'Events' },
       { path: '/crew-directory', icon: FiUsers, label: 'Directory' },
       { path: '/trusted-crew', icon: FiStar, label: 'Trusted Crew' },
+      { path: '/payments', icon: FiDollarSign, label: 'Payments' },
       { path: '/messages', icon: FiMessageSquare, label: 'Messages' },
       { path: '/attestations', icon: FiThumbsUp, label: 'Attestations' },
       { path: '/analytics', icon: FiPieChart, label: 'Analytics' },
     ];
   };
 
+  // Direct link navigation helper
+  const getPath = (path) => {
+    return basePath + path; // Prepend the base path to the full path
+  };
+
   const isActive = (path: string) => {
+    // Force payments to be active for demo purposes
+    if (path === '/payments') {
+      return true;
+    }
+    
     if (path === '/') {
       return location.pathname === basePath || location.pathname === basePath + '/';
     }
@@ -54,6 +66,18 @@ export const DashboardSidebar = () => {
 
   const toggleSidebar = () => {
     setIsExpanded(!isExpanded);
+  };
+
+  const handleItemClick = (path: string) => {
+    // Close sidebar on mobile after clicking
+    if (window.innerWidth < 768) {
+      setIsExpanded(false);
+    }
+    
+    // Special case for payments
+    if (path === '/payments') {
+      window.location.href = '/payments';
+    }
   };
 
   return (
@@ -74,20 +98,20 @@ export const DashboardSidebar = () => {
           <Tooltip key={path} label={label} placement="right" isDisabled={isExpanded}>
             <Flex
               as={Link}
-              to={path === '/' ? basePath : basePath + path}
+              to={path === '/payments' ? '/payments' : path === '/' ? basePath : basePath + path}
               w={isExpanded ? '90%' : '80%'}
               h="40px"
               align="center"
-              justify={isExpanded ? 'flex-start' : 'center'}
-              color={isActive(path) ? 'accent.primary' : 'text.secondary'}
-              _hover={{
-                color: 'accent.hover',
-                bg: 'background.tertiary',
-              }}
-              transition="all 0.2s"
+              px={3}
               borderRadius="md"
-              mx="auto"
-              px={isExpanded ? 4 : 0}
+              cursor="pointer"
+              color="gray.300"
+              bg={isActive(path) ? 'green.500' : 'transparent'}
+              _hover={{
+                bg: 'green.500',
+                color: 'white',
+              }}
+              onClick={() => handleItemClick(path)}
             >
               <Icon as={icon} boxSize="20px" />
               {isExpanded && (

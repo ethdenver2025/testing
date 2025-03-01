@@ -7,7 +7,7 @@ interface FormicaryLogoProps {
   color?: string;
 }
 
-export const FormicaryLogo: React.FC<FormicaryLogoProps> = ({ 
+const FormicaryLogo: React.FC<FormicaryLogoProps> = ({ 
   width = "40px", 
   height = "40px", 
   color = "#2979FF" 
@@ -58,3 +58,4 @@ export const FormicaryLogo: React.FC<FormicaryLogoProps> = ({
 };
 
 export default FormicaryLogo;
+export { FormicaryLogo };

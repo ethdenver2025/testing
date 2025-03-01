@@ -1,10 +1,11 @@
-import { ethers } from 'ethers';
-import { Web3Provider } from '@ethersproject/providers';
+import { createWalletClient, custom, http } from 'viem';
+import { mainnet } from 'viem/chains';
+import { useAccount, useConnect, useDisconnect } from 'wagmi';
 
 export class WalletService {
   private static instance: WalletService;
-  private provider: Web3Provider | null = null;
-  private signer: ethers.Signer | null = null;
+  private walletClient: any = null;
+  private address: string | null = null;
 
   private constructor() {}
 
@@ -16,45 +17,76 @@ export class WalletService {
   }
 
   public async initialize(): Promise<void> {
-    if (typeof window.ethereum !== 'undefined') {
-      this.provider = new ethers.providers.Web3Provider(window.ethereum);
-      await window.ethereum.request({ method: 'eth_requestAccounts' });
-      this.signer = this.provider.getSigner();
+    if (typeof window !== 'undefined' && typeof window.ethereum !== 'undefined') {
+      try {
+        // Create a wallet client using viem
+        this.walletClient = createWalletClient({
+          chain: mainnet,
+          transport: custom(window.ethereum)
+        });
+        
+        // Request accounts from the wallet
+        const [address] = await window.ethereum.request({ 
+          method: 'eth_requestAccounts' 
+        });
+        
+        this.address = address;
+        console.log('Wallet initialized with address:', this.address);
+      } catch (error) {
+        console.error('Error initializing wallet:', error);
+        throw new Error('Failed to initialize wallet');
+      }
     } else {
       throw new Error('Please install MetaMask or another Web3 wallet');
     }
   }
 
   public async getAddress(): Promise<string> {
-    if (!this.signer) {
+    if (!this.address) {
       throw new Error('Wallet not initialized');
     }
-    return await this.signer.getAddress();
+    return this.address;
   }
 
   public async signMessage(message: string): Promise<string> {
-    if (!this.signer) {
+    if (!this.walletClient || !this.address) {
       throw new Error('Wallet not initialized');
     }
-    return await this.signer.signMessage(message);
+    
+    try {
+      const signature = await this.walletClient.signMessage({
+        account: this.address,
+        message
+      });
+      return signature;
+    } catch (error) {
+      console.error('Error signing message:', error);
+      throw error;
+    }
   }
 
-  public async sendTransaction(tx: ethers.providers.TransactionRequest): Promise<ethers.providers.TransactionResponse> {
-    if (!this.signer) {
+  public async sendTransaction(tx: any): Promise<any> {
+    if (!this.walletClient || !this.address) {
       throw new Error('Wallet not initialized');
     }
-    return await this.signer.sendTransaction(tx);
+    
+    try {
+      const hash = await this.walletClient.sendTransaction({
+        account: this.address,
+        ...tx
+      });
+      return { hash };
+    } catch (error) {
+      console.error('Error sending transaction:', error);
+      throw error;
+    }
   }
 
   public isInitialized(): boolean {
-    return this.signer !== null;
+    return this.walletClient !== null && this.address !== null;
   }
 
-  public getProvider(): Web3Provider | null {
-    return this.provider;
-  }
-
-  public getSigner(): ethers.Signer | null {
-    return this.signer;
+  public getClient(): any {
+    return this.walletClient;
   }
 }

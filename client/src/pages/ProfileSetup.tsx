@@ -27,16 +27,21 @@ export const ProfileSetup = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
     if (!username.trim()) {
       toast({
         title: 'Error',
-        description: 'Please enter a username',
+        description: 'Username is required',
         status: 'error',
         duration: 3000,
         isClosable: true,
       });
       return;
     }
+
+    const roles: UserType[] = [];
+    if (isProduction) roles.push('PRODUCTION_CREW');
+    if (isOrganizer) roles.push('EVENT_ORGANIZER');
 
     if (!isProduction && !isOrganizer) {
       toast({
@@ -48,10 +53,6 @@ export const ProfileSetup = () => {
       });
       return;
     }
-
-    const roles: UserType[] = [];
-    if (isProduction) roles.push('PRODUCTION_CREW');
-    if (isOrganizer) roles.push('EVENT_ORGANIZER');
 
     try {
       setIsLoading(true);
